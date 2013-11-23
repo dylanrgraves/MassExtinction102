@@ -1,0 +1,40 @@
+{
+    "error_tips_table": [{
+        "cond": {
+            "title": "enchant.js cannot be loaded.",
+            "content": "To load enchant.js, it must be added within the <head> tag of index.html. [code]<script src='http://coderun.9leap.net/static/enchant.js-latest/enchant.js'></script>[/code] For tips, please start from 'Starting with enchant.js' from the dashboard and fork a starting lesson."
+        },
+        "title": "enchant.js cannot be loaded."
+    }, {
+        "cond": {
+            "title": "Syntax Error",
+            "content": "There is no problem loading enchant.js, but there is a syntax error somewhere in main.js. This could be caused by a missing enchant(); statement."
+        },
+        "title": "Syntax Error"
+    }, {
+        "cond": {
+            "title": "Failure in the new Game(); statement",
+            "content": "To load enchant.js, it must be added within the <head> tag of index.html. [code]<script src='http://coderun.9leap.net/static/enchant.js-latest/enchant.js'></script>[/code] For tips, please start from 'Starting with enchant.js' from the dashboard and fork a starting lesson."
+        },
+        "title": "Failure in the new Game(); statement"
+    }, {
+        "cond": {
+            "title": "Aren't you forgetting the addChild statement?",
+            "content": "When you create a new object with 'new Sprite();' or 'new Label()', you must add it to the root scene of the main game object with [code]game.rootScene.addChild(sprite);[/code]"
+        },
+        "title": "Aren't you forgetting the addChild statement?"
+    }],
+    "progress_tips_table": [{
+        "cond": "a==10",
+        "title": "Problem 1",
+        "content": "Try making 10 bears![code]for(a=0;a<10;a++)//This will loop the code 10 times[/code]Let's try it!"
+    }, {
+        "cond": "document.getElementsByTagName('div').length>15;",
+        "title": "Problem 2",
+        "content": "The next one's tough! Let's try adding one more line![code]for(a=0;a<10;a++){ //loop 10 times<BR>    bear = new Bear(10,a*32);<BR>}<BR>for(a=0;a<10;a++){ //loop 10 times<BR>    bear = new Bear(40,a*32);<BR>}<BR>[/code]Here, we're going through a for loop twice!<BR>Try it out!
+    }],
+    "default_tips_table": [{
+        "title": "Congratulations",
+        "content": "<img width=160px src=http://junk.wise9.jp/code9/clear.gif><BR>You've mastered for loops!<BR>Take on the next step!"
+    }]
+}
