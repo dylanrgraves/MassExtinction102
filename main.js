@@ -4,7 +4,7 @@ Explosion = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization
         Sprite.call(this, 32, 32); //initialize the sprite object
-        this.image = game.assets['effect0.gif'];
+        this.image = game.assets['assets/images/effect0.gif'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -26,7 +26,7 @@ Belt = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization, trade these out for the space1
         Sprite.call(this, 64, 64); //initialize the sprite object
-        this.image = game.assets['space1.png'];
+        this.image = game.assets['assets/images/space1.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -45,7 +45,7 @@ LargePlanet = Class.create(Sprite, // extend the sprite class
         this.hig = 64;
         Sprite.call(this, this.wid, this.hig); //initialize the sprite object
         this.gravity = 0.3;
-        this.image = game.assets['Large.png'];
+        this.image = game.assets['assets/images/Large.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -85,7 +85,7 @@ MediumPlanet = Class.create(Sprite, // extend the sprite class
         this.hig = 48;
         Sprite.call(this, this.wid, this.hig); //initialize the sprite object
         this.gravity = 0.2;
-        this.image = game.assets['medium.png'];
+        this.image = game.assets['assets/images/medium.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -124,7 +124,7 @@ SmallPlanet = Class.create(Sprite, // extend the sprite class
         this.hig = 32;
         Sprite.call(this, this.wid, this.hig); //initialize the sprite object
         this.gravity = 0.1;
-        this.image = game.assets['small.png'];
+        this.image = game.assets['assets/images/small.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -162,7 +162,7 @@ Earth = Class.create(Sprite, // extend the sprite class
         this.hig = 40;
         Sprite.call(this, this.wid, this.hig); //initialize the sprite object
         this.gravity = 0.11;
-        this.image = game.assets['earth.png'];
+        this.image = game.assets['assets/images/earth.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -210,7 +210,7 @@ Asteroid = Class.create(Sprite, {
         this.velY = vY;
 
         Sprite.call(this, 32, 32); //initialize the sprite object
-        this.image = game.assets["shooting.png"];
+        this.image = game.assets["assets/images/shooting.png"];
         this.x = x;
         this.y = y;
         this.frame = 1;
@@ -246,7 +246,7 @@ Asteroid = Class.create(Sprite, {
     die: function() {
         this.remove();
         new Explosion(this.LocX() - 16, this.LocY() - 16);
-        game.assets['Explosion.wav'].play();
+        game.assets['assets/sounds/Explosion.wav'].play();
     },
     
     end: function() {
@@ -270,7 +270,7 @@ window.onload = function() {
     var score = new Label("");
 
     drop = new Sprite(320, 560);
-    drop.image = game.assets['backdrop.png'];
+    drop.image = game.assets['assets/images/backdrop.png'];
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
@@ -287,7 +287,7 @@ window.onload = function() {
         'Explosion.wav');
     
     drop = new Sprite(320, 560);
-    drop.image = game.assets['backdrop.png'];
+    drop.image = game.assets['assets/images/backdrop.png'];
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
