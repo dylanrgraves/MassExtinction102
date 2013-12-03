@@ -1,5 +1,7 @@
 enchant();
 
+var curScene;
+
 Explosion = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization
@@ -8,7 +10,6 @@ Explosion = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
     },
     //define the enterframe event listener
     onenterframe: function() {
@@ -30,7 +31,6 @@ Belt = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
     },
     onenterframe: function() {
         //add rotate code here
@@ -49,7 +49,15 @@ LargePlanet = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
+        //--------------------------NEW VARIABLES FOR ORBITTING----------------
+        this.orbit = 0;
+        this.orbitAngle = 0;
+        this.orbitSpeed = 1;
+        this.midX = this.x + this.wid / 2;
+        this.midY = this.y + this.hig / 2;
+        this.radius = 0;
+        this.clockwise = true;
+        //---------------------------------------------------------------
     },
     //alter asteroids velocity with gravity
     effect: function(ast) {
@@ -67,15 +75,38 @@ LargePlanet = Class.create(Sprite, // extend the sprite class
     collide: function(ast) {
         ast.die();
         //game.NextLevel();
-       // new Explosion(ast.LocX() - 16, ast.LocY() - 16);
-       game.reset();
-       game.UpdateScore();
+        // new Explosion(ast.LocX() - 16, ast.LocY() - 16);
+        game.reset();
+        game.UpdateScore();
     },
 
     end: function() {
         this.remove();
     }
-
+    //----------------------------- ADDED CODE: OBJECT AT THE CENTER OF ORBIT ---------------------
+    ,
+    addOrbit: function(planet, radius, angle, speed, clockwise) {
+        this.radius = radius;
+        this.orbitAngle = angle;
+        this.orbitSpeed = speed;
+        this.clockwise = clockwise;
+        this.orbit = planet;
+        this.orbit.x = this.midX - this.orbit.wid / 2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+        this.orbit.y = this.midY - this.orbit.hig / 2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
+    },
+    onenterframe: function() {
+        this.midX = this.x + this.wid / 2;
+        this.midY = this.y + this.hig / 2;
+        if (this.orbit !== 0) {
+            if (this.clockwise) 
+                this.orbitAngle += this.orbitSpeed;
+            else 
+                this.orbitAngle -= this.orbitSpeed;
+            this.orbit.x = this.midX - this.orbit.wid / 2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+            this.orbit.y = this.midY - this.orbit.hig / 2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
+        }
+    }
+    //---------------------------------------------------------------------------------------------
 });
 
 MediumPlanet = Class.create(Sprite, // extend the sprite class
@@ -89,7 +120,6 @@ MediumPlanet = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
     },
     //alter asteroids velocity with gravity
     effect: function(ast) {
@@ -128,7 +158,6 @@ SmallPlanet = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
     },
     //alter asteroids velocity with gravity
     effect: function(ast) {
@@ -166,7 +195,6 @@ Earth = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
-        game.rootScene.addChild(this);
     },
     //alter asteroids velocity with gravity
     effect: function(ast) {
@@ -201,7 +229,6 @@ Earth = Class.create(Sprite, // extend the sprite class
     end: function() {
         this.remove();
     }
-
 });
 
 Asteroid = Class.create(Sprite, {
@@ -214,7 +241,6 @@ Asteroid = Class.create(Sprite, {
         this.x = x;
         this.y = y;
         this.frame = 1;
-        game.rootScene.addChild(this);
     },
 
     onenterframe: function() {
@@ -245,7 +271,7 @@ Asteroid = Class.create(Sprite, {
 
     die: function() {
         this.remove();
-        new Explosion(this.LocX() - 16, this.LocY() - 16);
+        curScene.addChild(new Explosion(this.LocX() - 16, this.LocY() - 16));
         game.assets['assets/sounds/Explosion.wav'].play();
     },
     
@@ -253,6 +279,7 @@ Asteroid = Class.create(Sprite, {
         this.remove();
     }
 });
+
 
 window.onload = function() {
     game = new Game(320, 560);
@@ -279,10 +306,10 @@ window.onload = function() {
         'assets/images/space1.png',
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
+        'assets/images/blankButton.png',
         'assets/sounds/Explosion.wav');
     
     drop = new Sprite(320, 560);
-    //drop.image = game.assets['assets/images/backdrop.png'];
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
@@ -297,7 +324,6 @@ window.onload = function() {
         label.color = color;
         label.x = x;
         label.y = y;
-        game.rootScene.addChild(label);
         return label;
     };
     
@@ -307,63 +333,132 @@ window.onload = function() {
     }
     
     game.NextLevel = function() {
-        for(i = numplanets; i > 0; i--) {
-            myplanets[i - 1].end();
-        }
-        earth.end();
-        game.reset();
-                
+        game.reset();       
         ++level;
         if (level == 2) {
-            myplanets[0] = new LargePlanet(100, 100);
-            myplanets[1] = new SmallPlanet(200, 200);
-            myplanets[2] = new MediumPlanet(250, 250);
-            earth = new Earth(150, 20);
-            numplanets = 3;
-        } else if(level == 3) {
-            myplanets[0] = new LargePlanet(15, 200);
-            myplanets[1] = new LargePlanet(190, 200);
-            myplanets[2] = new LargePlanet(270, 200);
-            earth = new Earth(200, 120);
-            numplanets = 3;
+            setTimeout('game.replaceScene(game.makeLevel2())', 1000);
+        } 
+        else if (level == 3) {
+            setTimeout('game.replaceScene(game.makeLevel3())', 1000);
         }
-        else if(level == 4){
-            end = true;
-            numplanets = 0;
-            myplanets[0] = new SmallPlanet(500, 200);
-            for (i = 0; i < 5; i++) {
-                mybelt[i].end();
-            }
+        else if (level == 4) {
+            setTimeout('game.replaceScene(game.makeLevel4())', 1000);
+        }
+        else if (level == 5) {
+            setTimeout('game.popScene()', 1000);
+            level = 1;
+            curScene = game.rootScene;
         }
     };
 
     game.onload = function() {
-        // Anything written here is processed
-        game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 170, 5);
+        // Set the root scene (menu)
+        curScene = game.rootScene;
+        
+        var bg = new Sprite(320, 560);
+        bg.image = game.assets['assets/images/backdrop.png'];
+        game.rootScene.addChild(bg);
+        
+        var newGameButton = new Sprite(300, 160);
+        newGameButton.image = game.assets['assets/images/blankButton.png'];
+        newGameButton.x = 10;
+        newGameButton.y = 200;
+        newGameButton.addEventListener(Event.TOUCH_START, function(e) {
+            game.pushScene(game.makeLevel1());
+        });
+        game.rootScene.addChild(newGameButton);
+    };
+    
+    // Level 1 Scene Creation
+    game.makeLevel1 = function() {
+        var scene = new Scene();
+        numplanets = 3;
         myplanets[0] = new SmallPlanet(100, 100);
         myplanets[1] = new MediumPlanet(200, 200);
         myplanets[2] = new LargePlanet(250, 250);
         earth = new Earth(100, 300);
+        game.addLevelObjects(scene);
+        curScene = scene;
+        return scene;
+    };
+    
+    //Level 2 Scene Creation
+    game.makeLevel2 = function() {
+        var scene = new Scene();
+        numplanets = 3;
+        myplanets[0] = new LargePlanet(150, 200);
+        myplanets[1] = new LargePlanet(0, 0);
+        myplanets[2] = new SmallPlanet(0, 0);
+        myplanets[0].addOrbit(myplanets[1], 110, 50, 1.2, false);
+        myplanets[1].addOrbit(myplanets[2], 55, 0, 3, true);
+        earth = new Earth(150, 20);
+        game.addLevelObjects(scene);
+        curScene = scene;
+        return scene;
+    };
+    
+    // Level 3 Scene Creation
+    game.makeLevel3 = function() {
+        var scene = new Scene();
+        numplanets = 3;
+        myplanets[0] = new LargePlanet(100, 100);
+        myplanets[1] = new SmallPlanet(200, 200);
+        myplanets[2] = new MediumPlanet(250, 250);
+        earth = new Earth(150, 20);
+        game.addLevelObjects(scene);
+        curScene = scene;
+        return scene;
+    };
+    
+    // Level 4 Scene Creation
+    game.makeLevel4 = function() {
+        var scene = new Scene();
+        numplanets = 3;
+        myplanets[0] = new LargePlanet(15, 200);
+        myplanets[1] = new LargePlanet(190, 200);
+        myplanets[2] = new LargePlanet(270, 200);
+        earth = new Earth(200, 120);
+        game.addLevelObjects(scene);
+        curScene = scene;
+        return scene;
+    };
+            
+    // Setting the elements that are common to each level
+    game.addLevelObjects = function(scene) {
+        var bg = new Sprite(320, 560);
+        bg.image = game.assets['assets/images/backdrop.png'];
+        scene.addChild(bg);
+        
+        scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 170, 5));
         score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 110, 540);
+        scene.addChild(score);
         
         for (i = 0; !end && i < 5; i++) {
             mybelt[i] = new Belt(62 * i, 420);
+            scene.addChild(mybelt[i]);
         }
-
-        game.addEventListener('enterframe', function() {
+        for (i = 0; i < numplanets; i++) {
+            scene.addChild(myplanets[i]);
+        }
+        scene.addChild(earth);
+        
+        game.setLevelListeners(scene);
+    };
+    
+    // Setting the level listeners 
+    game.setLevelListeners = function(scene) {
+        scene.addEventListener('enterframe', function() {
             if (placed && !end) {
-                if (this.age % 3 > 0) return;
-                for (i = 0; i < 3; i++) {
+                if (this.age % numplanets > 0) return;
+                for (i = 0; i < numplanets; i++) {
                     myplanets[i].effect(myasteroid);
                 }
                 earth.effect(myasteroid);
-                //console.log('asteroid x = '+ myasteroid.LocX() + ' asteroid y = '+ myasteroid.LocY());
             }
             score.text = "You have missed: "+points+" asteroids";
-
         });
 
-        game.rootScene.addEventListener('touchstart', function(e) {
+        scene.addEventListener('touchstart', function(e) {
             pretouch = e;
             if (e.x > 170 && e.y < 20) {
                 myasteroid.end();
@@ -372,7 +467,7 @@ window.onload = function() {
             }
         });
 
-        game.rootScene.addEventListener('touchend', function(e) {
+        scene.addEventListener('touchend', function(e) {
             if (!end && !placed && pretouch.y > 460) {
                 var myX = pretouch.x - 16;
                 var myY = pretouch.y - 16;
@@ -381,9 +476,12 @@ window.onload = function() {
                 var distance = Math.sqrt(lenX * lenX + lenY * lenY);
                 myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance);
                 myplanets[8] = new Explosion(myX, myY);
+                scene.addChild(myasteroid);
+                scene.addChild(myplanets[8]);
                 placed = true;
             }
         });
     };
+    
     game.start();
 };
