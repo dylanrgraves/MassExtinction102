@@ -268,26 +268,20 @@ window.onload = function() {
     var drop;
     var points = 0;
     var score = new Label("");
-
-    drop = new Sprite(320, 560);
-    drop.image = game.assets['assets/images/backdrop.png'];
-    drop.frame = 0;
-    drop.y = 0;
-    drop.x = 0;
     
     game.scoreLabel = null;
     game.rootScene.backgroundColor = "black";
-    game.preload('Large.png',
-        'medium.png',
-        'small.png',
-        'shooting.png',
-        'earth.png',
-        'space1.png',
-        'backdrop.png',
-        'Explosion.wav');
+    game.preload('assets/images/Large.png',
+        'assets/images/medium.png',
+        'assets/images/small.png',
+        'assets/images/shooting.png',
+        'assets/images/earth.png',
+        'assets/images/space1.png',
+        'assets/images/backdrop.png',
+        'assets/sounds/Explosion.wav');
     
     drop = new Sprite(320, 560);
-    drop.image = game.assets['assets/images/backdrop.png'];
+    //drop.image = game.assets['assets/images/backdrop.png'];
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
