@@ -4,7 +4,7 @@ Explosion = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization
         Sprite.call(this, 32, 32); //initialize the sprite object
-        this.image = game.assets['assets/images/effect0.gif'];
+        this.image = game.assets['assets/images/effect0.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -15,7 +15,7 @@ Explosion = Class.create(Sprite, // extend the sprite class
         if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
         //move slightly to the right
         //animate the bear
-        if (this.frame == 5) {//if the bear is using frame 2...
+        if (this.frame == 4) {//if the bear is using frame 2...
             this.remove(); //reset the frame back to 0
         }
         this.frame++; //increase the frame # used by one
@@ -278,6 +278,7 @@ window.onload = function() {
         'assets/images/earth.png',
         'assets/images/space1.png',
         'assets/images/backdrop.png',
+        'assets/images/effect0.png',
         'assets/sounds/Explosion.wav');
     
     drop = new Sprite(320, 560);
