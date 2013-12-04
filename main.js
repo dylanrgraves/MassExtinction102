@@ -280,6 +280,20 @@ Asteroid = Class.create(Sprite, {
     }
 });
 
+MusicPlayer = Class.create( {
+    
+	initialize: function() { //initialization
+		var bgm;
+		this.bgm = game.assets['assets/sounds/trackA.mp3'];
+		this.bgm.play();
+    },
+		
+    update: function() {
+       if(this.bgm.currentTime >= this.bgm.duration){
+	      this.bgm.play();
+	   }
+    }
+});
 
 window.onload = function() {
     game = new Game(320, 560);
@@ -292,6 +306,7 @@ window.onload = function() {
     var pretouch;
     var mybelt = [];
     var end = false;
+	var mp;
     var drop;
     var points = 0;
     var score = new Label("");
@@ -307,13 +322,16 @@ window.onload = function() {
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
-        'assets/sounds/Explosion.wav');
-    
+        'assets/sounds/Explosion.wav',
+		'assets/sounds/trackA.mp3');
+		
     drop = new Sprite(320, 560);
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
+ 
     
+ 
     game.UpdateScore = function() {
         points++;
     };
@@ -354,7 +372,9 @@ window.onload = function() {
     game.onload = function() {
         // Set the root scene (menu)
         curScene = game.rootScene;
-        
+        mp = new MusicPlayer();
+	    //game.rootScene.addChild(mp);
+		
         var bg = new Sprite(320, 560);
         bg.image = game.assets['assets/images/backdrop.png'];
         game.rootScene.addChild(bg);
@@ -369,6 +389,8 @@ window.onload = function() {
         game.rootScene.addChild(newGameButton);
     };
     
+
+	
     // Level 1 Scene Creation
     game.makeLevel1 = function() {
         var scene = new Scene();
