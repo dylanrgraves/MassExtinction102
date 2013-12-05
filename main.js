@@ -12,6 +12,77 @@ InformationBar = Class.create({
     
 });
 
+Message = Class.create(Label, 
+{
+    initialize: function(txt) {
+	    Label.call(this, ' ');
+		
+		this.ndx = 0;
+		this.str = txt;
+		this.x = 0;
+		this.y = 420;
+		this.color = "white";
+		this.font = "monospace";
+		this.backgroundColor = "blue";
+		this.textAlign = "right";
+		this.width = 420;
+		this.height = 20;
+		this.opacity = 0;
+		this.stage = 0;
+	},
+	
+	onenterframe:function() {
+	    if(this.stage === 0) {
+		    if(this.opacity < 1) {
+			    this.fadeIn();
+			} 
+			else {
+			    this.stage++;
+			}
+		}
+		else if (this.stage === 1) {
+		    if(this.age %3 === 0){
+		        this.scroll();
+		    }
+			if(this.text === '') {
+			    this.stage++;
+			}
+		}
+		else if (this.stage === 2) {
+		    if(this.opacity > 0) {
+			    this.fadeOut();
+			}
+			else {
+			    curScene.removeChild(this);
+			}
+		}
+	},
+	
+	scroll: function(){
+	    if(this.ndx > 85) {
+			if(this.ndx > this.str.length)
+			    this.text = this.text.substr(1,this.text.length) + ' ';
+			else
+				this.text = this.text.substr(1,this.text.length) + this.str.charAt(this.ndx);
+		}
+	    else {
+			if(this.ndx > this.str.length)
+			    this.text = this.text.substr(0,this.text.length) + ' ';
+			else
+				this.text = this.text.substr(0,this.text.length) + this.str.charAt(this.ndx);
+		}
+		this.ndx++;
+	},
+	
+	fadeOut: function() {
+	    this.opacity -= .1
+	},
+	
+	fadeIn: function() {
+	    this.opacity += .1
+	}
+});
+
 Explosion = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization
@@ -402,6 +473,8 @@ window.onload = function() {
         myplanets[2] = new Planet(250, 250, 1, 1, 'Large.png');
         earth = new Earth(100, 300);
         game.addLevelObjects(scene);
+		mess = new Message('Hello World extra long text for the purpose of proving what i already know. Now lets make it even longer to show what happes when i have a super long message');
+		scene.addChild(mess);
         curScene = scene;
         return scene;
     };
