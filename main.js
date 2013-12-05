@@ -2,6 +2,10 @@ enchant();
 
 var curScene;
 
+InformationBar = Class.create({
+    
+});
+
 Explosion = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization
@@ -470,6 +474,7 @@ window.onload = function() {
     // Setting the level listeners 
     game.setLevelListeners = function(scene) {
         scene.addEventListener('enterframe', function() {
+		    mp.update();
             if (placed && !end) {
                 if (this.age % numplanets > 0) return;
                 for (i = 0; i < numplanets; i++) {
