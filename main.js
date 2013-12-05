@@ -44,7 +44,7 @@ Message = Class.create(Label,
 		    if(this.age %3 === 0){
 		        this.scroll();
 		    }
-			if(this.text === '') {
+			if(this.ndx > this.str.length && this.text.charAt(0) === ' ' && this.text.charAt(1) === ' ' && this.text.charAt(2) === ' ') {
 			    this.stage++;
 			}
 		}
