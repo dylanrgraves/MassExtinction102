@@ -300,7 +300,7 @@ MusicPlayer = Class.create( {
 });
 
 window.onload = function() {
-    game = new Game(320, 560);
+    game = new Game(420, 560);
     var myplanets = [];
     var numplanets = 3;
     var level = 1;
@@ -329,7 +329,7 @@ window.onload = function() {
         'assets/sounds/Explosion.wav',
 		'assets/sounds/trackA.mp3');
 		
-    drop = new Sprite(320, 560);
+    drop = new Sprite(420, 560);
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
@@ -379,7 +379,7 @@ window.onload = function() {
         mp = new MusicPlayer();
 	    //game.rootScene.addChild(mp);
 		
-        var bg = new Sprite(320, 560);
+        var bg = new Sprite(420, 560);
         bg.image = game.assets['assets/images/backdrop.png'];
         game.rootScene.addChild(bg);
         
@@ -455,11 +455,11 @@ window.onload = function() {
         bg.image = game.assets['assets/images/backdrop.png'];
         scene.addChild(bg);
         
-        scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 170, 5));
-        score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 110, 540);
+        scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 270, 5));
+        score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 210, 540);
         scene.addChild(score);
         
-        for (i = 0; !end && i < 5; i++) {
+        for (i = 0; !end && i < 7; i++) {
             mybelt[i] = new Belt(62 * i, 420);
             scene.addChild(mybelt[i]);
         }
@@ -487,7 +487,7 @@ window.onload = function() {
 
         scene.addEventListener('touchstart', function(e) {
             pretouch = e;
-            if (e.x > 170 && e.y < 20) {
+            if (e.x > 270 && e.y < 20) {
                 myasteroid.end();
                 placed = false;
                 game.UpdateScore();
