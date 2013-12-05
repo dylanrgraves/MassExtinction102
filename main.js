@@ -2,6 +2,12 @@ enchant();
 
 var curScene;
 
+function vector(vx, vy)
+{
+   this.x= vx;
+   this.y= vy;
+}
+
 InformationBar = Class.create({
     
 });
@@ -18,13 +24,11 @@ Explosion = Class.create(Sprite, // extend the sprite class
     //define the enterframe event listener
     onenterframe: function() {
         if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
-        //move slightly to the right
-        //animate the bear
-        if (this.frame == 4) {//if the bear is using frame 2...
-            this.remove(); //reset the frame back to 0
+        if (this.frame == 4) {
+            this.remove();
         }
-        this.frame++; //increase the frame # used by one
-    },
+        this.frame++;
+    }
 });
 
 Belt = Class.create(Sprite, // extend the sprite class
@@ -38,149 +42,105 @@ Belt = Class.create(Sprite, // extend the sprite class
     },
     onenterframe: function() {
         //add rotate code here
-    },
-
+    }
 });
 
-LargePlanet = Class.create(Sprite, // extend the sprite class
+
+Planet = Class.create(Sprite, // extend the sprite class
 {
-    initialize: function(x, y) { //initialization
-        this.wid = 64;
-        this.hig = 64;
-        Sprite.call(this, this.wid, this.hig); //initialize the sprite object
-        this.gravity = 0.3;
-        this.image = game.assets['assets/images/Large.png'];
+    initialize: function(x, y, mult, grav, img) { //initialization
+        var spriteImage = game.assets['assets/images/'+img];
+        Sprite.call(this, spriteImage.width, spriteImage.height); //initialize the sprite object
+        this.image = spriteImage;
+        this.scale(mult);
+        this.realWidth = this.image.width * mult;
+        this.realHeight = this.image.height * mult;
+        this.gravity = 1*mult*mult*grav*grav;
+
         this.x = x;
         this.y = y;
         this.frame = 0;
-        //--------------------------NEW VARIABLES FOR ORBITTING----------------
+
         this.orbit = 0;
         this.orbitAngle = 0;
         this.orbitSpeed = 1;
-        this.midX = this.x + this.wid / 2;
-        this.midY = this.y + this.hig / 2;
+        this.midX = this.x + this.realWidth / 2;
+        this.midY = this.y + this.realHeight / 2;
         this.radius = 0;
         this.clockwise = true;
-        //---------------------------------------------------------------
     },
+
+    onenterframe: function() {
+        this.midX = this.x + this.realWidth / 2;
+        this.midY = this.y + this.realHeight / 2;
+        if (this.orbit !== 0) {
+            if (this.clockwise) 
+                this.orbitAngle += this.orbitSpeed;
+            else 
+                this.orbitAngle -= this.orbitSpeed;
+            this.orbit.x = this.midX - this.orbit.realWidth/2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+            this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
+        }
+
+        //animate the planet here
+        /*if (this.frame == 2) //if the bear is using frame 2...
+        this.frame = 0; //reset the frame back to 0
+        this.frame++; //increase the frame # used by one*/
+    },
+
+    getCenter: function() {
+        var ret = new vector(this.width/2 + this.x, this.height/2 + this.y); //should be able to just return this
+
+        return ret;
+    },
+
+    getDistanceFrom: function(locX, locY) {
+        var myLoc = this.getCenter();
+        var lenX = myLoc.x - locX;
+        var lenY = myLoc.y - locY;
+        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
+
+        return distance;
+    },
+
+    gravityAt: function(locX, locY) {
+        var myLoc = this.getCenter();
+        var len = new vector(myLoc.x - locX, myLoc.y - locY);
+        var distance = Math.sqrt(len.x * len.x + len.y * len.y);
+
+        distance *= distance;
+        
+        var force = new vector(len.x*this.gravity/distance, len.y*this.gravity/distance);
+
+        return force;
+    },
+    
     //alter asteroids velocity with gravity
     effect: function(ast) {
-        var myX = this.x + this.wid / 2;
-        var myY = this.y + this.hig / 2;
-        var lenX = myX - ast.LocX();
-        var lenY = myY - ast.LocY();
-        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
-        if (distance <= this.wid / 2 + 16) {
+        var astLoc = ast.getLoc();
+        var distance = this.getDistanceFrom(astLoc.x, astLoc.y);
+        var force = this.gravityAt(astLoc.x, astLoc.y);
+        
+        if (distance <= this.realWidth/2 + ast.getRad()) {
             this.collide(ast);
         }
-        ast.update(this.gravity * (lenX / (distance * 4)), this.gravity * (lenY / (4 * distance)));
+        ast.update(force.x, force.y);
     },
 
     collide: function(ast) {
         ast.die();
-        //game.NextLevel();
-        // new Explosion(ast.LocX() - 16, ast.LocY() - 16);
         game.reset();
         game.UpdateScore();
     },
-
-    end: function() {
-        this.remove();
-    }
-    //----------------------------- ADDED CODE: OBJECT AT THE CENTER OF ORBIT ---------------------
-    ,
+    
     addOrbit: function(planet, radius, angle, speed, clockwise) {
         this.radius = radius;
         this.orbitAngle = angle;
         this.orbitSpeed = speed;
         this.clockwise = clockwise;
         this.orbit = planet;
-        this.orbit.x = this.midX - this.orbit.wid / 2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
-        this.orbit.y = this.midY - this.orbit.hig / 2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
-    },
-    onenterframe: function() {
-        this.midX = this.x + this.wid / 2;
-        this.midY = this.y + this.hig / 2;
-        if (this.orbit !== 0) {
-            if (this.clockwise) 
-                this.orbitAngle += this.orbitSpeed;
-            else 
-                this.orbitAngle -= this.orbitSpeed;
-            this.orbit.x = this.midX - this.orbit.wid / 2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
-            this.orbit.y = this.midY - this.orbit.hig / 2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
-        }
-    }
-    //---------------------------------------------------------------------------------------------
-});
-
-MediumPlanet = Class.create(Sprite, // extend the sprite class
-{
-    initialize: function(x, y) { //initialization
-        this.wid = 48;
-        this.hig = 48;
-        Sprite.call(this, this.wid, this.hig); //initialize the sprite object
-        this.gravity = 0.2;
-        this.image = game.assets['assets/images/medium.png'];
-        this.x = x;
-        this.y = y;
-        this.frame = 0;
-    },
-    //alter asteroids velocity with gravity
-    effect: function(ast) {
-        var myX = this.x + this.wid / 2;
-        var myY = this.y + this.hig / 2;
-        var lenX = myX - ast.LocX();
-        var lenY = myY - ast.LocY();
-        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
-        if (distance <= this.wid / 2 + 16) {
-            this.collide(ast);
-        }
-        ast.update(this.gravity * (lenX / (distance * 4)), this.gravity * (lenY / (distance * 4)));
-    },
-
-    collide: function(ast) {
-        ast.die();
-        //new Explosion(ast.LocX() - 16, ast.LocY() - 16);
-        game.reset();
-        game.UpdateScore();
-    },
-    
-    end: function() {
-        this.remove();
-    }
-
-});
-
-SmallPlanet = Class.create(Sprite, // extend the sprite class
-{
-    initialize: function(x, y) { //initialization
-        this.wid = 32;
-        this.hig = 32;
-        Sprite.call(this, this.wid, this.hig); //initialize the sprite object
-        this.gravity = 0.1;
-        this.image = game.assets['assets/images/small.png'];
-        this.x = x;
-        this.y = y;
-        this.frame = 0;
-    },
-    //alter asteroids velocity with gravity
-    effect: function(ast) {
-        var myX = this.x + this.wid / 2;
-        var myY = this.y + this.hig / 2;
-        var lenX = myX - ast.LocX();
-        var lenY = myY - ast.LocY();
-        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
-        if (distance <= this.wid / 2 + 16) {
-            this.collide(ast);
-        }
-        ast.update(this.gravity * (lenX / (distance * 4)), this.gravity * (lenY / (distance * 4)));
-    },
-
-    collide: function(ast) {
-        ast.die();
-        game.reset();
-        game.UpdateScore();
-        //new Explosion(ast.LocX() - 16, ast.LocY() - 16);
+        this.orbit.x = this.midX - this.orbit.realWidth/2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+        this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
     },
     
     end: function() {
@@ -193,41 +153,67 @@ Earth = Class.create(Sprite, // extend the sprite class
     initialize: function(x, y) { //initialization
         this.wid = 40;
         this.hig = 40;
-        Sprite.call(this, this.wid, this.hig); //initialize the sprite object
-        this.gravity = 0.11;
+        this.gravity = 1.1;
+
+        Sprite.call(this, 40, 40); //initialize the sprite object
         this.image = game.assets['assets/images/earth.png'];
         this.x = x;
         this.y = y;
         this.frame = 0;
     },
+
+    onenterframe: function() {
+        //move the planet around in an orbit here
+
+        if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
+        if (this.frame == 5) {
+            this.frame = 0;
+        }
+        this.frame++;
+    },
+
+    getCenter: function() {
+        var ret = new vector(this.wid/2 + this.x, this.hig/2 + this.y); //should be able to just return this
+
+        return ret;
+    },
+
+    getDistanceFrom: function(locX, locY) {
+        var myLoc = this.getCenter();
+        var lenX = myLoc.x - locX;
+        var lenY = myLoc.y - locY;
+        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
+
+        return distance;
+    },
+
+    gravityAt: function(locX, locY) {
+        var myLoc = this.getCenter();
+        var len = new vector(myLoc.x - locX, myLoc.y - locY);
+        var distance = Math.sqrt(len.x * len.x + len.y * len.y);
+
+        distance *= distance;
+        
+        var force = new vector(len.x*this.gravity/distance, len.y*this.gravity/distance);
+
+        return force;
+    },
+    
     //alter asteroids velocity with gravity
     effect: function(ast) {
-        var myX = this.x + this.wid / 2;
-        var myY = this.y + this.hig / 2;
-        var lenX = myX - ast.LocX();
-        var lenY = myY - ast.LocY();
-        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
-        if (distance <= this.wid / 2 + 16) {
+        var astLoc = ast.getLoc();
+        var distance = this.getDistanceFrom(astLoc.x, astLoc.y);
+        var force = this.gravityAt(astLoc.x, astLoc.y);
+        
+        if (distance <= this.wid/2 + ast.getRad()) {
             this.collide(ast);
         }
-        ast.update(this.gravity * (lenX / (distance * 4)), this.gravity * (lenY / (distance * 4)));
+        ast.update(force.x, force.y);
     },
 
     collide: function(ast) {
         ast.die();
-        //new Explosion(ast.LocX() - 16, ast.LocY() - 16);
         game.NextLevel();
-    },
-    
-    onenterframe: function() {
-        if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
-        //move slightly to the right
-        //animate the bear
-        if (this.frame == 5) {//if the bear is using frame 2...
-            this.frame = 0; //reset the frame back to 0
-        }
-        this.frame++; //increase the frame # used by one
-        
     },
     
     end: function() {
@@ -236,7 +222,7 @@ Earth = Class.create(Sprite, // extend the sprite class
 });
 
 Asteroid = Class.create(Sprite, {
-    initialize: function(x, y, vX, vY) { //initialization
+    initialize: function(x, y, vX, vY, number) { //initialization
         this.velX = vX;
         this.velY = vY;
 
@@ -245,6 +231,10 @@ Asteroid = Class.create(Sprite, {
         this.x = x;
         this.y = y;
         this.frame = 1;
+        this.wid = 32/number;
+        this.radius = this.wid/2;
+        this.scaleX = 1/number;
+        this.scaleY = 1/number;
     },
 
     onenterframe: function() {
@@ -259,24 +249,38 @@ Asteroid = Class.create(Sprite, {
     },
 
     update: function(dX, dY) {
-        //console.log("dx = "+dX + " dY = "+ dY);
         this.velX += dX;
         this.velY += dY;
-        //console.log("velX = "+this.velX + " velY = "+ this.velY);
+    },
+    
+    shatter: function(pieces) {
+        var i;
+        var hold;
+        
+        for (i = 0; i < pieces; i++) {
+            hold = new Asteroid(this.x, this.y, this.velX, this.velY, this.number+1);   //todo, make this better. add it to the list of asteroids in a scene
+            game.rootScene.addChild(hold);
+        }
+        //this.remove();
+        //new Explosion(this.LocX() - 16, this.LocY() - 16);
+        //game.assets['Explosion.wav'].play();
+        
     },
 
-    LocX: function() {
-        return this.x + 16;
+    getLoc: function() {
+        var ret = new vector(this.x + this.radius, this.y + this.radius);
+        
+        return ret;
     },
 
-    LocY: function() {
-        return this.y + 16;
+    getRad: function() {
+        return this.radius;
     },
 
     die: function() {
-        this.remove();
-        curScene.addChild(new Explosion(this.LocX() - 16, this.LocY() - 16));
+        curScene.addChild(new Explosion(this.x, this.y));
         game.assets['assets/sounds/Explosion.wav'].play();
+        this.remove();
     },
     
     end: function() {
@@ -285,7 +289,6 @@ Asteroid = Class.create(Sprite, {
 });
 
 MusicPlayer = Class.create( {
-    
 	initialize: function() { //initialization
 		var bgm;
 		this.bgm = game.assets['assets/sounds/trackA.mp3'];
@@ -310,7 +313,7 @@ window.onload = function() {
     var pretouch;
     var mybelt = [];
     var end = false;
-	var mp;
+    var mp;
     var drop;
     var points = 0;
     var score = new Label("");
@@ -327,15 +330,13 @@ window.onload = function() {
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
         'assets/sounds/Explosion.wav',
-		'assets/sounds/trackA.mp3');
-		
+        'assets/sounds/trackA.mp3');
+    
     drop = new Sprite(420, 560);
     drop.frame = 0;
     drop.y = 0;
     drop.x = 0;
- 
     
- 
     game.UpdateScore = function() {
         points++;
     };
@@ -377,15 +378,14 @@ window.onload = function() {
         // Set the root scene (menu)
         curScene = game.rootScene;
         mp = new MusicPlayer();
-	    //game.rootScene.addChild(mp);
-		
+        
         var bg = new Sprite(420, 560);
         bg.image = game.assets['assets/images/backdrop.png'];
         game.rootScene.addChild(bg);
         
         var newGameButton = new Sprite(300, 160);
         newGameButton.image = game.assets['assets/images/blankButton.png'];
-        newGameButton.x = 10;
+        newGameButton.x = 60;
         newGameButton.y = 200;
         newGameButton.addEventListener(Event.TOUCH_START, function(e) {
             game.pushScene(game.makeLevel1());
@@ -393,15 +393,13 @@ window.onload = function() {
         game.rootScene.addChild(newGameButton);
     };
     
-
-	
     // Level 1 Scene Creation
     game.makeLevel1 = function() {
         var scene = new Scene();
         numplanets = 3;
-        myplanets[0] = new SmallPlanet(100, 100);
-        myplanets[1] = new MediumPlanet(200, 200);
-        myplanets[2] = new LargePlanet(250, 250);
+        myplanets[0] = new Planet(100, 100, 3, 5, 'small.png');
+        myplanets[1] = new Planet(200, 200, 1, 1, 'medium.png');
+        myplanets[2] = new Planet(250, 250, 1, 1, 'Large.png');
         earth = new Earth(100, 300);
         game.addLevelObjects(scene);
         curScene = scene;
@@ -412,9 +410,9 @@ window.onload = function() {
     game.makeLevel2 = function() {
         var scene = new Scene();
         numplanets = 3;
-        myplanets[0] = new LargePlanet(150, 200);
-        myplanets[1] = new LargePlanet(0, 0);
-        myplanets[2] = new SmallPlanet(0, 0);
+        myplanets[0] = new Planet(150, 200, 1, 5, 'Large.png');
+        myplanets[1] = new Planet(0, 0, 1, 10, 'Large.png');
+        myplanets[2] = new Planet(0, 0, 1, 1, 'small.png');
         myplanets[0].addOrbit(myplanets[1], 110, 50, 1.2, false);
         myplanets[1].addOrbit(myplanets[2], 55, 0, 3, true);
         earth = new Earth(150, 20);
@@ -427,9 +425,9 @@ window.onload = function() {
     game.makeLevel3 = function() {
         var scene = new Scene();
         numplanets = 3;
-        myplanets[0] = new LargePlanet(100, 100);
-        myplanets[1] = new SmallPlanet(200, 200);
-        myplanets[2] = new MediumPlanet(250, 250);
+        myplanets[0] = new Planet(100, 100, 1, 1, 'Large.png');
+        myplanets[1] = new Planet(200, 200, 1, 1, 'small.png');
+        myplanets[2] = new Planet(250, 250, 1, 1, 'medium.png');
         earth = new Earth(150, 20);
         game.addLevelObjects(scene);
         curScene = scene;
@@ -440,9 +438,9 @@ window.onload = function() {
     game.makeLevel4 = function() {
         var scene = new Scene();
         numplanets = 3;
-        myplanets[0] = new LargePlanet(15, 200);
-        myplanets[1] = new LargePlanet(190, 200);
-        myplanets[2] = new LargePlanet(270, 200);
+        myplanets[0] = new Planet(15, 200, 1, 1, 'Large.png');
+        myplanets[1] = new Planet(190, 200, 1, 10, 'Large.png');
+        myplanets[2] = new Planet(270, 200, 1, 1, 'Large.png');
         earth = new Earth(200, 120);
         game.addLevelObjects(scene);
         curScene = scene;
@@ -451,7 +449,7 @@ window.onload = function() {
             
     // Setting the elements that are common to each level
     game.addLevelObjects = function(scene) {
-        var bg = new Sprite(320, 560);
+        var bg = new Sprite(420, 560);
         bg.image = game.assets['assets/images/backdrop.png'];
         scene.addChild(bg);
         
@@ -474,7 +472,7 @@ window.onload = function() {
     // Setting the level listeners 
     game.setLevelListeners = function(scene) {
         scene.addEventListener('enterframe', function() {
-		    mp.update();
+            mp.update();
             if (placed && !end) {
                 if (this.age % numplanets > 0) return;
                 for (i = 0; i < numplanets; i++) {
@@ -501,7 +499,7 @@ window.onload = function() {
                 var lenX = myX - e.x;
                 var lenY = myY - e.y;
                 var distance = Math.sqrt(lenX * lenX + lenY * lenY);
-                myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance);
+                myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance, 1);
                 myplanets[8] = new Explosion(myX, myY);
                 scene.addChild(myasteroid);
                 scene.addChild(myplanets[8]);
