@@ -1,7 +1,7 @@
 enchant();
 
 var curScene;
-
+var trailList;
 function vector(vx, vy)
 {
    this.x= vx;
@@ -292,6 +292,83 @@ Earth = Class.create(Sprite, // extend the sprite class
     }
 });
 
+AsteroidTrailList = Class.create({
+   initialize: function() {
+      this.trails = new Array();
+	  this.allDisplayed = false;
+   },
+   
+   addTrail: function(newTrail) {
+      	if(this.trails.length == 3) {
+		    this.trails[0] = this.trails[1];
+			this.trails[1] = this.trails[2];
+			this.trails[2] = newTrail;
+		}else{
+		   this.trails[this.trails.length] = newTrail;
+		   }
+   },
+   display: function() {
+		if(this.allDisplayed) {
+			this.hideAll();
+			this.allDisplayed = false;
+		}
+		else {
+			this.hideLast();
+		}
+   },
+   displayAll: function() {
+		for(index = 0; index < this.trails.length; index++) {
+			val = this.trails[index];
+			for(ndx = 0; ndx < val.dots.length; ndx++) {
+				curScene.addChild(val.dots[ndx]);
+			}
+		}
+		this.allDisplayed = true;
+   },
+   hideAll: function() {
+		for(index = 0; index < this.trails.length; index++) {
+			val = this.trails[index];
+			for(ndx = 0; ndx < val.dots.length; ndx++) {
+				curScene.removeChild(val.dots[ndx]);
+			}
+		}
+   },
+   hideLast: function() {
+        if(this.trails.length > 0) {
+			val = this.trails[this.trails.length - 1];
+			for(ndx = 0; ndx < val.dots.length; ndx++) {
+				curScene.removeChild(val.dots[ndx]);
+			}
+		}
+   }   
+});
+
+AsteroidTrail = Class.create({
+     initialize: function() {
+	     this.dots = new Array();
+		 this.size = 0;
+		 trailList.addTrail(this);
+	 },
+	 
+	 addDot: function(x,y) {
+	    dot = new Sprite(20,20);
+		dot.image = game.assets["assets/images/asteroidTrail.png"];
+		dot.x = x;
+		dot.scaleX = .5;
+		dot.scaleY = .5;
+		dot.y = y;
+		curScene.addChild(dot);
+		this.dots[this.size++] = dot;
+	 },
+	 
+	 destroy: function() {
+	    while(--this.size) {
+		    curScene.removeChild(this.dots[this.size]);
+		}
+		curScene.removeChild(this.dots[this.size]);
+	 }
+});
+
 Asteroid = Class.create(Sprite, {
     initialize: function(x, y, vX, vY, number) { //initialization
         this.velX = vX;
@@ -306,13 +383,17 @@ Asteroid = Class.create(Sprite, {
         this.radius = this.wid/2;
         this.scaleX = 1/number;
         this.scaleY = 1/number;
+		trailList.display();
+		this.trail = new AsteroidTrail();
+
     },
 
     onenterframe: function() {
         //move slightly to the right
         this.x += this.velX;
         this.y += this.velY;
-
+		if(this.age%2 == 0)
+			this.trail.addDot(this.x, this.y);
         //animate the bear
         /*if (this.frame == 2) //if the bear is using frame 2...
         this.frame = 0; //reset the frame back to 0
@@ -351,6 +432,7 @@ Asteroid = Class.create(Sprite, {
     die: function() {
         curScene.addChild(new Explosion(this.x, this.y));
         game.assets['assets/sounds/Explosion.wav'].play();
+		//this.trail.destroy();
         this.remove();
     },
     
@@ -400,6 +482,7 @@ window.onload = function() {
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
+		'assets/images/asteroidTrail.png',
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3');
     
@@ -523,10 +606,12 @@ window.onload = function() {
     // Setting the elements that are common to each level
     game.addLevelObjects = function(scene) {
         var bg = new Sprite(420, 560);
+		trailList = new AsteroidTrailList();
         bg.image = game.assets['assets/images/backdrop.png'];
         scene.addChild(bg);
         
         scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 270, 5));
+		scene.addChild(game.AddLabel("Click to display last 3 attempts", "rgb(255, 255, 255)", 0, 5));
         score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 210, 540);
         scene.addChild(score);
         
@@ -563,6 +648,9 @@ window.onload = function() {
                 placed = false;
                 game.UpdateScore();
             }
+			if(e.x < 100 && e.y < 100) {
+				trailList.displayAll();
+			}
         });
 
         scene.addEventListener('touchend', function(e) {
