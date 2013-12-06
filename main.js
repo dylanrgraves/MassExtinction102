@@ -22,7 +22,7 @@ Message = Class.create(Label,
 		this.x = 0;
 		this.y = 420;
 		this.color = "white";
-		this.font = "monospace";
+		this.font = " 16px monospace";
 		this.backgroundColor = "blue";
 		this.textAlign = "right";
 		this.width = 420;
@@ -59,7 +59,7 @@ Message = Class.create(Label,
 	},
 	
 	scroll: function(){
-	    if(this.ndx > 85) {
+	    if(this.ndx > 40 /*85*/) {
 			if(this.ndx > this.str.length)
 			    this.text = this.text.substr(1,this.text.length) + ' ';
 			else
@@ -75,12 +75,43 @@ Message = Class.create(Label,
 	},
 	
 	fadeOut: function() {
-	    this.opacity -= .1
+	    this.opacity = (this.opacity - 0.1).toFixed(1);
 	},
 	
 	fadeIn: function() {
-	    this.opacity += .1
+	    this.opacity = (this.opacity + 0.1).toFixed(1);
 	}
+});
+
+Directions = Class.create(Sprite,
+{
+    initialize: function(x, y, width, height, img) {
+        Sprite.call(this, width, height);
+        this.image = game.assets['assets/images/' + img];
+        this.x = x;
+        this.y = y;
+        this.timeout = 200;
+    },
+    
+    onenterframe: function() {
+        if (this.timeout > 0)
+            this.timeout--;
+        else if (this.opacity > 0)
+            this.opacity = (this.opacity - 0.01).toFixed(2);
+        //Code for blinking instructions
+        /*
+        if (this.timeout === 0 && this.opacity > 0)
+            this.opacity = (this.opacity - 0.05).toFixed(2);
+        else if (this.timeout !== 0 && this.opacity < 1)
+            this.opacity = (this.opacity + 0.05).toFixed(2);
+        else if (this.opacity === 0) {
+            this.opacity = 0;
+            this.timeout = 30;
+        }
+        else
+            this.timeout--;
+        */
+    }   
 });
 
 Explosion = Class.create(Sprite, // extend the sprite class
@@ -135,15 +166,15 @@ Planet = Class.create(Sprite, // extend the sprite class
         this.orbit = 0;
         this.orbitAngle = 0;
         this.orbitSpeed = 1;
-        this.midX = this.x + this.realWidth / 2;
-        this.midY = this.y + this.realHeight / 2;
+        this.midX = this.x + this.image.width/2;
+        this.midY = this.y + this.image.height/2;
         this.radius = 0;
         this.clockwise = true;
     },
 
     onenterframe: function() {
-        this.midX = this.x + this.realWidth / 2;
-        this.midY = this.y + this.realHeight / 2;
+        this.midX = this.x + this.image.width/2;
+        this.midY = this.y + this.image.height/2;
         if (this.orbit !== 0) {
             if (this.clockwise) 
                 this.orbitAngle += this.orbitSpeed;
@@ -231,10 +262,30 @@ Earth = Class.create(Sprite, // extend the sprite class
         this.x = x;
         this.y = y;
         this.frame = 0;
+        
+        this.realWidth = this.wid;
+        this.realHeight = this.hig;
+        this.orbit = 0;
+        this.orbitAngle = 0;
+        this.orbitSpeed = 1;
+        this.midX = this.x + this.realWidth / 2;
+        this.midY = this.y + this.realHeight / 2;
+        this.radius = 0;
+        this.clockwise = true;
     },
 
     onenterframe: function() {
-        //move the planet around in an orbit here
+        // Move the planet around in an orbit
+        this.midX = this.x + this.realWidth / 2;
+        this.midY = this.y + this.realHeight / 2;
+        if (this.orbit !== 0) {
+            if (this.clockwise) 
+                this.orbitAngle += this.orbitSpeed;
+            else 
+                this.orbitAngle -= this.orbitSpeed;
+            this.orbit.x = this.midX - this.orbit.realWidth/2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+            this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
+        }
 
         if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
         if (this.frame == 5) {
@@ -280,6 +331,16 @@ Earth = Class.create(Sprite, // extend the sprite class
             this.collide(ast);
         }
         ast.update(force.x, force.y);
+    },
+    
+    addOrbit: function(planet, radius, angle, speed, clockwise) {
+        this.radius = radius;
+        this.orbitAngle = angle;
+        this.orbitSpeed = speed;
+        this.clockwise = clockwise;
+        this.orbit = planet;
+        this.orbit.x = this.midX - this.orbit.realWidth/2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+        this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
     },
 
     collide: function(ast) {
@@ -380,6 +441,7 @@ window.onload = function() {
     var level = 1;
     var myasteroid;
     var earth;
+    var message;
     var placed = false;
     var pretouch;
     var mybelt = [];
@@ -400,6 +462,11 @@ window.onload = function() {
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
+        'assets/images/title.png',
+        'assets/images/directions1.png',
+        'assets/images/directions2.png',
+        'assets/images/directions3.png',
+        'assets/images/directions4.png',
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3');
     
@@ -427,7 +494,8 @@ window.onload = function() {
     }
     
     game.NextLevel = function() {
-        game.reset();       
+        game.reset();
+        message.remove();
         ++level;
         if (level == 2) {
             setTimeout('game.replaceScene(game.makeLevel2())', 1000);
@@ -443,6 +511,7 @@ window.onload = function() {
             level = 1;
             curScene = game.rootScene;
         }
+        
     };
 
     game.onload = function() {
@@ -454,10 +523,16 @@ window.onload = function() {
         bg.image = game.assets['assets/images/backdrop.png'];
         game.rootScene.addChild(bg);
         
+        var title = new Sprite(400, 154);
+        title.image = game.assets['assets/images/title.png'];
+        title.x = 10;
+        title.y = 75;
+        game.rootScene.addChild(title);
+        
         var newGameButton = new Sprite(300, 160);
         newGameButton.image = game.assets['assets/images/blankButton.png'];
         newGameButton.x = 60;
-        newGameButton.y = 200;
+        newGameButton.y = 300;
         newGameButton.addEventListener(Event.TOUCH_START, function(e) {
             game.pushScene(game.makeLevel1());
         });
@@ -467,14 +542,13 @@ window.onload = function() {
     // Level 1 Scene Creation
     game.makeLevel1 = function() {
         var scene = new Scene();
-        numplanets = 3;
-        myplanets[0] = new Planet(100, 100, 3, 5, 'small.png');
-        myplanets[1] = new Planet(200, 200, 1, 1, 'medium.png');
-        myplanets[2] = new Planet(250, 250, 1, 1, 'Large.png');
-        earth = new Earth(100, 300);
-        game.addLevelObjects(scene);
-		mess = new Message('Hello World extra long text for the purpose of proving what i already know. Now lets make it even longer to show what happes when i have a super long message');
-		scene.addChild(mess);
+        numplanets = 0;
+        earth = new Earth(190, 100);
+		message = new Message('Year 4,540,000,000 BC - "This strange new planet seemed to have appeared in a neighboring galaxy, ' +
+		                      'devoid of any life as far as we can tell. Looks like the perfect target to try out our new ' +
+		                      'asteroid-launching weapon system!"');
+		game.addLevelObjects(scene);
+		scene.addChild(new Directions(125, 175, 170, 170, 'directions1.png'));
         curScene = scene;
         return scene;
     };
@@ -482,14 +556,16 @@ window.onload = function() {
     //Level 2 Scene Creation
     game.makeLevel2 = function() {
         var scene = new Scene();
-        numplanets = 3;
-        myplanets[0] = new Planet(150, 200, 1, 5, 'Large.png');
-        myplanets[1] = new Planet(0, 0, 1, 10, 'Large.png');
-        myplanets[2] = new Planet(0, 0, 1, 1, 'small.png');
-        myplanets[0].addOrbit(myplanets[1], 110, 50, 1.2, false);
-        myplanets[1].addOrbit(myplanets[2], 55, 0, 3, true);
-        earth = new Earth(150, 20);
+        numplanets = 1;
+        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
+        earth = new Earth(250, 110);
+        earth.addOrbit(myplanets[0], 80, 0, 1.5, false);
+        message = new Message("Year 65,000,000 BC - It looks like our asteroid-launching system was a success! " +
+                              "Our trial runs seemed to have broken a large chunk off this planet, which is now orbiting " +
+                              "the planet like a moon or something. I'm sure those funny looking reptiles won't mind " +
+                              "if we try to test our accuracy again.");
         game.addLevelObjects(scene);
+        scene.addChild(new Directions(20, 200, 170, 53, 'directions2.png'));
         curScene = scene;
         return scene;
     };
@@ -497,12 +573,19 @@ window.onload = function() {
     // Level 3 Scene Creation
     game.makeLevel3 = function() {
         var scene = new Scene();
-        numplanets = 3;
-        myplanets[0] = new Planet(100, 100, 1, 1, 'Large.png');
-        myplanets[1] = new Planet(200, 200, 1, 1, 'small.png');
-        myplanets[2] = new Planet(250, 250, 1, 1, 'medium.png');
+        numplanets = 4;
+        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
+        myplanets[1] = new Planet(100, 150, 1.25, 7, 'Large.png');
+        myplanets[2] = new Planet(210, 250, 1, 3, 'small.png');
+        myplanets[3] = new Planet(275, 300, 1, 5, 'medium.png');
         earth = new Earth(150, 20);
+        earth.addOrbit(myplanets[0], 70, 0, 1.5, false);
+        message = new Message("Year 50,000 BC - Well, we seemed to have completely wiped out those reptiles with our last " +
+                              "shot. It's alright, they got replaced by these hairy bipedal things anyway. They do seem to " +
+                              "be far more intelligent than anything else we've seen on this planet so far. Hmm... We'll have " +
+                              "to keep an eye on them.");
         game.addLevelObjects(scene);
+        scene.addChild(new Directions(230, 120, 185, 100, 'directions3.png'));
         curScene = scene;
         return scene;
     };
@@ -510,16 +593,23 @@ window.onload = function() {
     // Level 4 Scene Creation
     game.makeLevel4 = function() {
         var scene = new Scene();
-        numplanets = 3;
-        myplanets[0] = new Planet(15, 200, 1, 1, 'Large.png');
-        myplanets[1] = new Planet(190, 200, 1, 10, 'Large.png');
-        myplanets[2] = new Planet(270, 200, 1, 1, 'Large.png');
-        earth = new Earth(200, 120);
+        numplanets = 5;
+        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
+        myplanets[1] = new Planet(15, 200, 1, 7, 'Large.png');
+        myplanets[2] = new Planet(190, 200, 1, 7, 'Large.png');
+        myplanets[3] = new Planet(270, 200, 1, 5, 'medium.png');
+        myplanets[4] = new Planet(350, 200, 1.5, 7, 'Large.png');
+        earth = new Earth(250, 75);
+        earth.addOrbit(myplanets[0], 50, 90, 1.5, false);
+        message = new Message("Year 338 BC - Wow, these 'humans' as they're called really have an aptitude for violence, even " +
+                              "among themselves. I foresee that this species will become a threat in the future if we don't " +
+                              "do anything now. Time to take matters into our own hands.");
         game.addLevelObjects(scene);
+        scene.addChild(new Directions(20, 50, 150, 80, 'directions4.png'));
         curScene = scene;
         return scene;
     };
-            
+    
     // Setting the elements that are common to each level
     game.addLevelObjects = function(scene) {
         var bg = new Sprite(420, 560);
@@ -538,7 +628,7 @@ window.onload = function() {
             scene.addChild(myplanets[i]);
         }
         scene.addChild(earth);
-        
+        scene.addChild(message);
         game.setLevelListeners(scene);
     };
     
