@@ -143,10 +143,23 @@ Belt = Class.create(Sprite, // extend the sprite class
         this.frame = 0;
     },
     onenterframe: function() {
-        //add rotate code here
+        //this.rotate(1.0);
     }
 });
 
+Crosshair = Class.create(Sprite,
+{
+    initialize: function(x, y) { //initialization, trade these out for the space1
+        Sprite.call(this, 64, 64); //initialize the sprite object
+        this.image = game.assets['assets/images/crosshair.png'];
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+    },
+    onenterframe: function() {
+        this.rotate(1.0);
+    }
+});
 
 Planet = Class.create(Sprite, // extend the sprite class
 {
@@ -532,6 +545,7 @@ window.onload = function() {
     var drop;
     var points = 0;
     var score = new Label("");
+	var crosshair;
     
     game.scoreLabel = null;
     game.rootScene.backgroundColor = "black";
@@ -550,8 +564,11 @@ window.onload = function() {
         'assets/images/directions2.png',
         'assets/images/directions3.png',
         'assets/images/directions4.png',
+		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
-        'assets/sounds/trackA.mp3');
+        'assets/sounds/trackA.mp3',
+		'assets/sounds/shot.wav',
+		'assets/sounds/beep.mp3');
     
     drop = new Sprite(420, 560);
     drop.frame = 0;
@@ -733,6 +750,9 @@ window.onload = function() {
 
         scene.addEventListener('touchstart', function(e) {
             pretouch = e;
+			crosshair = new Crosshair(e.x - 32,e.y - 32);
+			game.assets['assets/sounds/beep.mp3'].play();
+			scene.addChild(crosshair);
             if (e.x > 270 && e.y < 20) {
                 myasteroid.end();
                 placed = false;
@@ -741,6 +761,8 @@ window.onload = function() {
 			if(e.x < 100 && e.y < 100) {
 				trailList.displayAll();
 			}
+			
+			
         });
 
         scene.addEventListener('touchend', function(e) {
@@ -755,7 +777,9 @@ window.onload = function() {
                 scene.addChild(myasteroid);
                 scene.addChild(myplanets[8]);
                 placed = true;
+				game.assets['assets/sounds/shot.wav'].play();
             }
+			crosshair.remove();
         });
     };
     
