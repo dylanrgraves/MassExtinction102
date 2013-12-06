@@ -544,15 +544,12 @@ window.onload = function() {
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
-<<<<<<< HEAD
 		'assets/images/asteroidTrail.png',
-=======
         'assets/images/title.png',
         'assets/images/directions1.png',
         'assets/images/directions2.png',
         'assets/images/directions3.png',
         'assets/images/directions4.png',
->>>>>>> 59697a5b93f32a0e76d05e3e48aaa8a6bd829111
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3');
     
