@@ -133,6 +133,28 @@ Explosion = Class.create(Sprite, // extend the sprite class
     }
 });
 
+Star = Class.create(Sprite,
+{
+    initialize: function(x, y, twink) {
+        this.twinkle = twink;
+        Sprite.call(this, 3, 3);
+        this.image = game.assets['assets/images/star.png'];
+        this.x = x;
+        this.y = y;
+        this.frame = 3*twink;
+    },
+
+    onenterframe: function() {
+        if (this.age % 11 > 0) return; //slows down the process a bit; makes the following code run only once every three frames
+
+        if(this.twinkle == 0)
+        {   if (this.frame++ == 5) {
+               this.remove();
+            }
+        }
+    },
+});
+
 Belt = Class.create(Sprite, // extend the sprite class
 {
     initialize: function(x, y) { //initialization, trade these out for the space1
@@ -204,9 +226,7 @@ Planet = Class.create(Sprite, // extend the sprite class
     },
 
     getCenter: function() {
-        var ret = new vector(this.width/2 + this.x, this.height/2 + this.y); //should be able to just return this
-
-        return ret;
+        return new vector((this.width/2)/Math.sqrt(2) + this.x, (this.height/2)/Math.sqrt(2) + this.y); //should be able to just return this
     },
 
     getDistanceFrom: function(locX, locY) {
@@ -278,6 +298,7 @@ Earth = Class.create(Sprite, // extend the sprite class
         
         this.realWidth = this.wid;
         this.realHeight = this.hig;
+
         this.orbit = 0;
         this.orbitAngle = 0;
         this.orbitSpeed = 1;
@@ -289,8 +310,8 @@ Earth = Class.create(Sprite, // extend the sprite class
 
     onenterframe: function() {
         // Move the planet around in an orbit
-        this.midX = this.x + this.realWidth / 2;
-        this.midY = this.y + this.realHeight / 2;
+        this.midX = this.getCenter().x;
+        this.midY = this.getCenter().y;
         if (this.orbit !== 0) {
             if (this.clockwise) 
                 this.orbitAngle += this.orbitSpeed;
@@ -308,7 +329,7 @@ Earth = Class.create(Sprite, // extend the sprite class
     },
 
     getCenter: function() {
-        var ret = new vector(this.wid/2 + this.x, this.hig/2 + this.y); //should be able to just return this
+        var ret = new vector((this.wid/2)/Math.sqrt(2) + this.x, (this.hig/2)/Math.sqrt(2) + this.y); //should be able to just return this
 
         return ret;
     },
@@ -427,10 +448,10 @@ AsteroidTrail = Class.create({
 	 addDot: function(x,y) {
 	    dot = new Sprite(20,20);
 		dot.image = game.assets["assets/images/asteroidTrail.png"];
-		dot.x = x;
+		dot.x = x - 10/Math.sqrt(2);
 		dot.scaleX = .5;
 		dot.scaleY = .5;
-		dot.y = y;
+		dot.y = y - 10/Math.sqrt(2);
 		curScene.addChild(dot);
 		this.dots[this.size++] = dot;
 	 },
@@ -467,7 +488,7 @@ Asteroid = Class.create(Sprite, {
         this.x += this.velX;
         this.y += this.velY;
 		if(this.age%2 == 0)
-			this.trail.addDot(this.x, this.y);
+			this.trail.addDot(this.getLoc().x, this.getLoc().y);
         //animate the bear
         /*if (this.frame == 2) //if the bear is using frame 2...
         this.frame = 0; //reset the frame back to 0
@@ -494,11 +515,11 @@ Asteroid = Class.create(Sprite, {
     },
 
     getLoc: function() {
-        var ret = new vector(this.x + this.radius, this.y + this.radius);
+        var ret = new vector(this.x + this.radius/Math.sqrt(2), this.y + this.radius/Math.sqrt(2));
         
         return ret;
     },
-
+    
     getRad: function() {
         return this.radius;
     },
@@ -566,6 +587,8 @@ window.onload = function() {
         'assets/images/directions4.png',
 		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
+        'assets/images/back2.png',
+        'assets/images/star.png',
         'assets/sounds/trackA.mp3',
 		'assets/sounds/shot.wav',
 		'assets/sounds/beep.mp3');
@@ -620,7 +643,7 @@ window.onload = function() {
         mp = new MusicPlayer();
         
         var bg = new Sprite(420, 560);
-        bg.image = game.assets['assets/images/backdrop.png'];
+        bg.image = game.assets['assets/images/back2.png'];
         game.rootScene.addChild(bg);
         
         var title = new Sprite(400, 154);
@@ -714,8 +737,9 @@ window.onload = function() {
     game.addLevelObjects = function(scene) {
         var bg = new Sprite(420, 560);
 		trailList = new AsteroidTrailList();
-        bg.image = game.assets['assets/images/backdrop.png'];
+        bg.image = game.assets['assets/images/back2.png'];
         scene.addChild(bg);
+        game.createStarField(scene);
         
         scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 270, 5));
 		scene.addChild(game.AddLabel("Click to display last 3 attempts", "rgb(255, 255, 255)", 0, 5));
@@ -733,10 +757,42 @@ window.onload = function() {
         scene.addChild(message);
         game.setLevelListeners(scene);
     };
+
+    //StarField set up
+    game.createStarField = function(scene) {
+        var divisions = 16;
+        var newStarsPerDivision = .011;
+        var starsTotal = (420*560/ (divisions*divisions)*newStarsPerDivision);
+        var starsTwinkle = starsTotal/2;
+        var starsSet = starsTotal - starsTwinkle;
+        var i, randX, randY;
+
+        for(i = 0; i < starsSet; i++) {
+            randX = Math.random()*420;
+            randY = Math.random()*560;
+            scene.addChild(new Star(randX, randY, 1));
+        }
+    };
+
+    game.updateStarField = function() {
+        var divisions = 16;
+        var newStarsPerDivision = .011;
+        var starsTotal = (420*560/ (divisions*divisions)*newStarsPerDivision);
+        var starsTwinkle = starsTotal/2;
+        var starsSet = starsTotal - starsTwinkle;
+        var i, randX, randY;
+
+        for(i = 0; i < starsTwinkle; i++) {
+            randX = Math.random()*420;
+            randY = Math.random()*560;
+            curScene.addChild(new Star(randX, randY, 0));
+        }
+    };
     
     // Setting the level listeners 
     game.setLevelListeners = function(scene) {
         scene.addEventListener('enterframe', function() {
+            game.updateStarField();
             mp.update();
             if (placed && !end) {
                 if (this.age % numplanets > 0) return;
