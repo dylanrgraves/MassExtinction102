@@ -633,8 +633,6 @@ window.onload = function() {
         'assets/images/medium.png',
         'assets/images/small.png',
         'assets/images/shooting.png',
-        'assets/images/star.png',
-        'assets/images/back2.png',        
         'assets/images/earth.png',
         'assets/images/space1.png',
         'assets/images/missle.png',
@@ -649,10 +647,17 @@ window.onload = function() {
         'assets/images/directions4.png',
 		  'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
+        'assets/images/back2.png',
+        'assets/images/star.png',
         'assets/sounds/trackA.mp3',
+<<<<<<< HEAD
+		  'assets/sounds/shot.wav',
+		  'assets/sounds/beep.mp3');
+=======
 		'assets/sounds/shot.wav',
 		'assets/sounds/click.mp3',
 		'assets/sounds/beep.mp3');
+>>>>>>> 0066144098e1365ff6804c3eaaa28725c8cf81e7
     
     drop = new Sprite(420, 560);
     drop.frame = 0;
@@ -857,6 +862,7 @@ window.onload = function() {
 
     game.testMissle = function(missle){
         for (i = 0; i < numplanets; i++) {
+            console.log(myplanets[i].getDistanceFrom(missle.x, missle.y) +" " + myplanets[i].radius);
             if(myplanets[i].getDistanceFrom(missle.x, missle.y) <= myplanets[i].radius) {
                 missle.die();
                 return;
