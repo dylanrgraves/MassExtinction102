@@ -2,6 +2,7 @@ enchant();
 
 var curScene;
 var trailList;
+var gravField
 function vector(vx, vy)
 {
    this.x= vx;
@@ -10,6 +11,63 @@ function vector(vx, vy)
 
 InformationBar = Class.create({
     
+});
+
+
+GravityLine = Class.create(Sprite,{
+	initialize: function(x,y) {
+		Sprite.call(this,20,4);
+		this.backgroundColor = "red";
+		this.x = x;
+		this.y = y;
+	},
+	
+	update: function(dx, dy){
+		if(dx > 0){
+		    this.rotation = 45;
+		} else {
+			this.rotation = -45;
+		}
+	},
+	
+	getLoc: function() {
+		return new vector(this.x, this.y);
+	},
+	getRad: function() {
+		return 10;
+	}
+});
+
+GravityField = Class.create(Node, 
+{
+	initialize: function() {
+		Node.call(this);
+		this.field = new Array();
+		this.numLines = 0;
+		this.displayed = false;
+		for(x = 0; x < 420; x += 21) {
+			for(y = 0; y < 440; y += 28) {
+				this.field[this.numLines++] = new GravityLine(x,y);
+			}
+	    }
+	},
+	update: function() {
+	    for(line = 0; line < numLines; line++) {
+			this.field[line].update();
+		}
+	},
+	display: function() {
+		for(ndx = 0; ndx < this.numLines; ndx++) {
+		    curScene.addChild(this.field[ndx]);
+		}
+		this.displayed = true;
+	},
+	hide: function() {
+		for(ndx = 0; ndx <this.numLines; ndx++) {
+		    curScene.removeChild(this.field[ndx]);
+		}
+		this.displayed = false;
+	}
 });
 
 Message = Class.create(Label, 
@@ -236,7 +294,7 @@ Planet = Class.create(Sprite, // extend the sprite class
         var distance = this.getDistanceFrom(astLoc.x, astLoc.y);
         var force = this.gravityAt(astLoc.x, astLoc.y);
         
-        if (distance <= this.realWidth/2 + ast.getRad()) {
+        if (ast instanceof Asteroid && distance <= this.realWidth/2 + ast.getRad()) {
             this.collide(ast);
         }
         ast.update(force.x, force.y);
@@ -714,9 +772,10 @@ window.onload = function() {
     game.addLevelObjects = function(scene) {
         var bg = new Sprite(420, 560);
 		trailList = new AsteroidTrailList();
+	    gravField = new GravityField();
         bg.image = game.assets['assets/images/backdrop.png'];
         scene.addChild(bg);
-        
+        scene.addChild(gravField);
         scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 270, 5));
 		scene.addChild(game.AddLabel("Click to display last 3 attempts", "rgb(255, 255, 255)", 0, 5));
         score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 210, 540);
@@ -738,12 +797,18 @@ window.onload = function() {
     game.setLevelListeners = function(scene) {
         scene.addEventListener('enterframe', function() {
             mp.update();
-            if (placed && !end) {
+            if (!end) {
                 if (this.age % numplanets > 0) return;
                 for (i = 0; i < numplanets; i++) {
-                    myplanets[i].effect(myasteroid);
+				    if(placed){
+						myplanets[i].effect(myasteroid);
+					}
+					for(gravLine = 0; gravLine < gravField.numLines; gravLine++) {
+						myplanets[i].effect(gravField.field[gravLine]);
+					}
                 }
-                earth.effect(myasteroid);
+				if(placed)
+					earth.effect(myasteroid);
             }
             score.text = "You have missed: "+points+" asteroids";
         });
@@ -761,8 +826,13 @@ window.onload = function() {
 			if(e.x < 100 && e.y < 100) {
 				trailList.displayAll();
 			}
-			
-			
+			if(e.x < 100 && e.y > 100 && e.y < 200) {
+				if(gravField.displayed) {
+					gravField.hide();
+				} else {
+					gravField.display();
+				}
+			}
         });
 
         scene.addEventListener('touchend', function(e) {
