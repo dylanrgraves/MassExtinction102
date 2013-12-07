@@ -568,6 +568,7 @@ window.onload = function() {
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3',
 		'assets/sounds/shot.wav',
+		'assets/sounds/click.mp3',
 		'assets/sounds/beep.mp3');
     
     drop = new Sprite(420, 560);
@@ -634,7 +635,8 @@ window.onload = function() {
         newGameButton.x = 60;
         newGameButton.y = 300;
         newGameButton.addEventListener(Event.TOUCH_START, function(e) {
-            game.pushScene(game.makeLevel1());
+            game.assets['assets/sounds/click.mp3'].play();
+			game.pushScene(game.makeLevel1());
         });
         game.rootScene.addChild(newGameButton);
     };
