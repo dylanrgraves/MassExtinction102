@@ -346,7 +346,7 @@ Earth = Class.create(Sprite, // extend the sprite class
     initialize: function(x, y, frequency) { //initialization
         this.wid = 40;
         this.hig = 40;
-        this.gravity = 1.1;
+        this.gravity = 3;
 
         Sprite.call(this, 40, 40); //initialize the sprite object
         this.image = game.assets['assets/images/earth.png'];
@@ -398,7 +398,7 @@ Earth = Class.create(Sprite, // extend the sprite class
         var center = this.getCenter();
         var missleSpeed = 5;    //adjust speed until it feels right
         //code here for finding a good direction to shoot the meteor TODO
-        game.fireMissles(center.x, center.y, 0, 5);
+        game.fireMissles(center.x, center.y);
     },
 
     getCenter: function() {
@@ -579,8 +579,8 @@ Asteroid = Class.create(Sprite, {
         this.frame = 1;
         this.wid = 32/number;
         this.radius = this.wid/2;
-        this.scaleX = number;
-        this.scaleY = number;
+        this.scaleX = 1/number;
+        this.scaleY = 1/number;
         this.pieces = number;
 		trailList.display();
 		this.trail = new AsteroidTrail();
@@ -605,21 +605,18 @@ Asteroid = Class.create(Sprite, {
     },
     
     shatter: function() {
-        var i;
         var hold;
-
-        if(this.pieces == 2)
-            this.die();
-        return;
-        
-        for (i = 0; i < this.pieces + 1; i++) {
-            hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random()*2), 2);   //todo, make this better. add it to the list of asteroids in a scene
-            game.rootScene.addChild(hold);
+         //yeah, so this is too complicated to put in correctly. so im going to have the asteroid break into only 1 smaller piece
+        if(this.pieces < 2)
+        {
+           hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random() + 1), this.pieces + 1);
+           game.setAsteroid(hold);
+           curScene.addChild(hold);
+        } else {
+         game.reset();
         }
-        //this.remove();
-        //new Explosion(this.LocX() - 16, this.LocY() - 16);
-        //game.assets['Explosion.wav'].play();
-        
+
+        this.die();
     },
 
     getLoc: function() {
@@ -882,6 +879,14 @@ window.onload = function() {
         game.setLevelListeners(scene);
     };
 
+    game.setAsteroid = function(asteroid) {
+      myasteroid = asteroid;
+    };
+
+    game.isPlaced = function() {
+      return this.placed;
+    };
+
     //StarField set up
     game.createStarField = function(scene) {
         var divisions = 16;
@@ -913,8 +918,22 @@ window.onload = function() {
         }
     };
 
-    game.fireMissles = function(x, y, vx, vy) {
-        curScene.addChild(new Missle(x, y, vx, vy));
+    game.fireMissles = function(x, y) {
+        var misslespeed = 7;
+        var predictTime = 11;
+        var earthLoc;
+        var asteroidLoc;
+        var distx, disty, total;
+        
+        if(placed) {
+            earthLoc = earth.getCenter();
+            asteroidLoc = myasteroid.getLoc();
+            distx = (asteroidLoc.x + myasteroid.velX*predictTime) - earthLoc.x;   //can get a better targetting system. Maybe we could use the force?
+            disty = (asteroidLoc.y + myasteroid.velY*predictTime) - earthLoc.y;
+
+            total = Math.sqrt(distx*distx + disty*disty);
+            curScene.addChild(new Missle(x, y, misslespeed*distx/total, misslespeed*disty/total));
+        }
     };
 
     game.testMissle = function(missle){
@@ -924,10 +943,11 @@ window.onload = function() {
                 return;
             }
         }
-        if(myasteroid != null && myasteroid.getDistanceFrom(missle.x, missle.y) < myasteroid.radius + 5) {
+        if(myasteroid != null && placed && myasteroid.getDistanceFrom(missle.x, missle.y) < myasteroid.radius + 5) {
             missle.die();
             //the asteroid should shatter, but for now it just dies
             myasteroid.shatter();
+            this.placed = false;
             return;
         }
 
