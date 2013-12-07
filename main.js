@@ -201,9 +201,9 @@ Planet = Class.create(Sprite, // extend the sprite class
         this.orbit = 0;
         this.orbitAngle = 0;
         this.orbitSpeed = 1;
-        this.midX = this.x + this.image.width/2;
-        this.midY = this.y + this.image.height/2;
-        this.radius = 0;
+        this.midX = this.x + (this.realWidth/2)*Math.sqrt(2);
+        this.midY = this.y + (this.realHeight/2)*Math.sqrt(2);
+        this.radius = this.realWidth/2;
         this.clockwise = true;
     },
 
@@ -226,7 +226,7 @@ Planet = Class.create(Sprite, // extend the sprite class
     },
 
     getCenter: function() {
-        return new vector((this.width/2)/Math.sqrt(2) + this.x, (this.height/2)/Math.sqrt(2) + this.y); //should be able to just return this
+        return new vector((this.realWidth/2)/Math.sqrt(2) + this.x, (this.realHeight/2)/Math.sqrt(2) + this.y); //should be able to just return this
     },
 
     getDistanceFrom: function(locX, locY) {
@@ -285,7 +285,7 @@ Planet = Class.create(Sprite, // extend the sprite class
 
 Earth = Class.create(Sprite, // extend the sprite class
 {
-    initialize: function(x, y) { //initialization
+    initialize: function(x, y, frequency) { //initialization
         this.wid = 40;
         this.hig = 40;
         this.gravity = 1.1;
@@ -302,10 +302,13 @@ Earth = Class.create(Sprite, // extend the sprite class
         this.orbit = 0;
         this.orbitAngle = 0;
         this.orbitSpeed = 1;
-        this.midX = this.x + this.realWidth / 2;
-        this.midY = this.y + this.realHeight / 2;
-        this.radius = 0;
+        this.midX = this.x + (this.realWidth / 2)*Math.sqrt(2);
+        this.midY = this.y + (this.realHeight / 2)*Math.sqrt(2);
+        this.radius = this.x + this.realWidth / 2;
         this.clockwise = true;
+
+        this.missleTimer = 0;
+        this.freq = frequency*16; //assumed 16 frames per second
     },
 
     onenterframe: function() {
@@ -321,11 +324,23 @@ Earth = Class.create(Sprite, // extend the sprite class
             this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
         }
 
+        if (++this.missleTimer == this.freq) {
+            this.missleTimer = 0;
+            this.fireMissle();
+        }
+
         if (this.age % 4 > 0) return; //slows down the process a bit; makes the following code run only once every four frames
         if (this.frame == 5) {
             this.frame = 0;
         }
         this.frame++;
+    },
+
+    fireMissle: function() {
+        var center = this.getCenter();
+        var missleSpeed = 5;    //adjust speed until it feels right
+        //code here for finding a good direction to shoot the meteor TODO
+        game.fireMissles(center.x, center.y, 0, 5);
     },
 
     getCenter: function() {
@@ -385,6 +400,36 @@ Earth = Class.create(Sprite, // extend the sprite class
     end: function() {
         this.remove();
     }
+});
+
+Missle = Class.create(Sprite, {
+    initialize: function(locx, locy, vx, vy) {
+        this.velX = vx;
+        this.velY = vy;
+        this.timer = 100;
+
+        Sprite.call(this, 4, 10);
+        this.image = game.assets["assets/images/missle.png"];
+        this.x = locx;
+        this.y = locy;
+        this.frame = 0;
+        this.rotation = 270;    //probably should convert to radians
+    },
+
+    onenterframe: function() {
+        this.x += this.velX;
+        this.y += this.velY;
+
+        game.testMissle(this);
+        if (--this.timer == 0)
+            this.die();
+    },
+
+    die: function() {
+        curScene.addChild(new Explosion(this.x, this.y));
+        game.assets['assets/sounds/Explosion.wav'].play();
+        this.remove();
+    },
 });
 
 AsteroidTrailList = Class.create({
@@ -476,8 +521,9 @@ Asteroid = Class.create(Sprite, {
         this.frame = 1;
         this.wid = 32/number;
         this.radius = this.wid/2;
-        this.scaleX = 1/number;
-        this.scaleY = 1/number;
+        this.scaleX = number;
+        this.scaleY = number;
+        this.pieces = number;
 		trailList.display();
 		this.trail = new AsteroidTrail();
 
@@ -500,12 +546,16 @@ Asteroid = Class.create(Sprite, {
         this.velY += dY;
     },
     
-    shatter: function(pieces) {
+    shatter: function() {
         var i;
         var hold;
+
+        if(this.pieces == 2)
+            this.die();
+        return;
         
-        for (i = 0; i < pieces; i++) {
-            hold = new Asteroid(this.x, this.y, this.velX, this.velY, this.number+1);   //todo, make this better. add it to the list of asteroids in a scene
+        for (i = 0; i < this.pieces + 1; i++) {
+            hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random()*2), 2);   //todo, make this better. add it to the list of asteroids in a scene
             game.rootScene.addChild(hold);
         }
         //this.remove();
@@ -518,6 +568,15 @@ Asteroid = Class.create(Sprite, {
         var ret = new vector(this.x + this.radius/Math.sqrt(2), this.y + this.radius/Math.sqrt(2));
         
         return ret;
+    },
+
+    getDistanceFrom: function(locX, locY) {
+        var myLoc = this.getLoc();
+        var lenX = myLoc.x - locX;
+        var lenY = myLoc.y - locY;
+        var distance = Math.sqrt(lenX * lenX + lenY * lenY);
+
+        return distance;
     },
     
     getRad: function() {
@@ -555,7 +614,7 @@ window.onload = function() {
     var myplanets = [];
     var numplanets = 3;
     var level = 1;
-    var myasteroid;
+    var myasteroid = null;
     var earth;
     var message;
     var placed = false;
@@ -576,22 +635,23 @@ window.onload = function() {
         'assets/images/shooting.png',
         'assets/images/earth.png',
         'assets/images/space1.png',
+        'assets/images/missle.png',
         'assets/images/backdrop.png',
         'assets/images/effect0.png',
         'assets/images/blankButton.png',
-		'assets/images/asteroidTrail.png',
+		  'assets/images/asteroidTrail.png',
         'assets/images/title.png',
         'assets/images/directions1.png',
         'assets/images/directions2.png',
         'assets/images/directions3.png',
         'assets/images/directions4.png',
-		'assets/images/crosshair.png',
+		  'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
         'assets/images/back2.png',
         'assets/images/star.png',
         'assets/sounds/trackA.mp3',
-		'assets/sounds/shot.wav',
-		'assets/sounds/beep.mp3');
+		  'assets/sounds/shot.wav',
+		  'assets/sounds/beep.mp3');
     
     drop = new Sprite(420, 560);
     drop.frame = 0;
@@ -666,7 +726,7 @@ window.onload = function() {
     game.makeLevel1 = function() {
         var scene = new Scene();
         numplanets = 0;
-        earth = new Earth(190, 100);
+        earth = new Earth(190, 100, 2);
 		message = new Message('Year 4,540,000,000 BC - "This strange new planet seemed to have appeared in a neighboring galaxy, ' +
 		                      'devoid of any life as far as we can tell. Looks like the perfect target to try out our new ' +
 		                      'asteroid-launching weapon system!"');
@@ -681,7 +741,7 @@ window.onload = function() {
         var scene = new Scene();
         numplanets = 1;
         myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
-        earth = new Earth(250, 110);
+        earth = new Earth(250, 110, 0);
         earth.addOrbit(myplanets[0], 80, 0, 1.5, false);
         message = new Message("Year 65,000,000 BC - It looks like our asteroid-launching system was a success! " +
                               "Our trial runs seemed to have broken a large chunk off this planet, which is now orbiting " +
@@ -701,7 +761,7 @@ window.onload = function() {
         myplanets[1] = new Planet(100, 150, 1.25, 7, 'Large.png');
         myplanets[2] = new Planet(210, 250, 1, 3, 'small.png');
         myplanets[3] = new Planet(275, 300, 1, 5, 'medium.png');
-        earth = new Earth(150, 20);
+        earth = new Earth(150, 20, 4);
         earth.addOrbit(myplanets[0], 70, 0, 1.5, false);
         message = new Message("Year 50,000 BC - Well, we seemed to have completely wiped out those reptiles with our last " +
                               "shot. It's alright, they got replaced by these hairy bipedal things anyway. They do seem to " +
@@ -722,7 +782,7 @@ window.onload = function() {
         myplanets[2] = new Planet(190, 200, 1, 7, 'Large.png');
         myplanets[3] = new Planet(270, 200, 1, 5, 'medium.png');
         myplanets[4] = new Planet(350, 200, 1.5, 7, 'Large.png');
-        earth = new Earth(250, 75);
+        earth = new Earth(250, 75, 0);
         earth.addOrbit(myplanets[0], 50, 90, 1.5, false);
         message = new Message("Year 338 BC - Wow, these 'humans' as they're called really have an aptitude for violence, even " +
                               "among themselves. I foresee that this species will become a threat in the future if we don't " +
@@ -788,6 +848,27 @@ window.onload = function() {
             curScene.addChild(new Star(randX, randY, 0));
         }
     };
+
+    game.fireMissles = function(x, y, vx, vy) {
+        curScene.addChild(new Missle(x, y, vx, vy));
+    };
+
+    game.testMissle = function(missle){
+        for (i = 0; i < numplanets; i++) {
+            console.log(myplanets[i].getDistanceFrom(missle.x, missle.y) +" " + myplanets[i].radius);
+            if(myplanets[i].getDistanceFrom(missle.x, missle.y) <= myplanets[i].radius) {
+                missle.die();
+                return;
+            }
+        }
+        if(myasteroid != null && myasteroid.getDistanceFrom(missle.x, missle.y) < myasteroid.radius + 5) {
+            missle.die();
+            //the asteroid should shatter, but for now it just dies
+            myasteroid.shatter();
+            return;
+        }
+
+    };
     
     // Setting the level listeners 
     game.setLevelListeners = function(scene) {
@@ -805,7 +886,7 @@ window.onload = function() {
         });
 
         scene.addEventListener('touchstart', function(e) {
-            pretouch = e;
+         pretouch = e;
 			crosshair = new Crosshair(e.x - 32,e.y - 32);
 			game.assets['assets/sounds/beep.mp3'].play();
 			scene.addChild(crosshair);
@@ -823,11 +904,11 @@ window.onload = function() {
 
         scene.addEventListener('touchend', function(e) {
             if (!end && !placed && pretouch.y > 460) {
-                var myX = pretouch.x - 16;
-                var myY = pretouch.y - 16;
+                var myX = pretouch.x;
+                var myY = pretouch.y;
                 var lenX = myX - e.x;
                 var lenY = myY - e.y;
-                var distance = Math.sqrt(lenX * lenX + lenY * lenY);
+                var distance = Math.sqrt(lenX * lenX + lenY * lenY) - .1;
                 myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance, 1);
                 myplanets[8] = new Explosion(myX, myY);
                 scene.addChild(myasteroid);
