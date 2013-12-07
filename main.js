@@ -2,7 +2,8 @@ enchant();
 
 var curScene;
 var trailList;
-var gravField
+var gravField;
+
 function vector(vx, vy)
 {
    this.x= vx;
