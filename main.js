@@ -14,6 +14,25 @@ InformationBar = Class.create({
     
 });
 
+Tail = Class.create(Sprite,{
+    initialize: function(x, y) { //initialization
+        Sprite.call(this, 3, 3); //initialize the sprite object
+        this.image = game.assets['assets/images/trail.png'];
+        this.x = x;
+        this.y = y;
+        this.scaleX = 2;
+		//this.scaleY = 2;
+        this.frame = 0;
+    },
+	
+	onenterframe: function() {
+
+	    this.frame++;
+	    this.scaleX -= .3;
+	    if(this.frame == 7)
+	        this.remove();
+	},
+});
 
 GravityLine = Class.create(Sprite,{
 	initialize: function(x,y) {
@@ -592,8 +611,10 @@ Asteroid = Class.create(Sprite, {
         //move slightly to the right
         this.x += this.velX;
         this.y += this.velY;
-		if(this.age%2 == 0)
+		if(this.age%2 == 0) {
 			this.trail.addDot(this.getLoc().x, this.getLoc().y);
+	    }
+	    game.fireTail(this.getLoc().x, this.getLoc().y, (32/this.pieces)/2);
         //animate the bear
         /*if (this.frame == 2) //if the bear is using frame 2...
         this.frame = 0; //reset the frame back to 0
@@ -608,7 +629,7 @@ Asteroid = Class.create(Sprite, {
     shatter: function() {
         var hold;
          //yeah, so this is too complicated to put in correctly. so im going to have the asteroid break into only 1 smaller piece
-        if(this.pieces < 2)
+        if(this.pieces < 3)
         {
            hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random() + 1), this.pieces + 1);
            game.setAsteroid(hold);
@@ -698,14 +719,15 @@ window.onload = function() {
 		'assets/images/back2.png',
 		'assets/images/star.png',
         'assets/images/effect0.png',
+        'assets/images/trail.png',
         'assets/images/blankButton.png',
-		  'assets/images/asteroidTrail.png',
+		'assets/images/asteroidTrail.png',
         'assets/images/title.png',
         'assets/images/directions1.png',
         'assets/images/directions2.png',
         'assets/images/directions3.png',
         'assets/images/directions4.png',
-		  'assets/images/crosshair.png',
+		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3',
 		'assets/sounds/shot.wav',
@@ -916,6 +938,17 @@ window.onload = function() {
             randX = Math.random()*420;
             randY = Math.random()*560;
             curScene.addChild(new Star(randX, randY, 0));
+        }
+    };
+
+    game.fireTail = function(x, y, rad) {
+        var offsetX;
+        var offsetY;
+        
+        for(offsetX = -rad; offsetX < rad; offsetX++) {
+            offsetY = Math.sqrt(rad*rad - offsetX*offsetX);
+            curScene.addChild(new Tail(offsetX + x, offsetY + y));
+            curScene.addChild(new Tail(offsetX + x, -offsetY + y));
         }
     };
 
