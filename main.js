@@ -1039,7 +1039,7 @@ window.onload = function() {
     //StarField set up
     game.createStarField = function(scene) {
         var divisions = 16;
-        var newStarsPerDivision = .011;
+        var newStarsPerDivision = .4;
         var starsTotal = (420*560/ (divisions*divisions)*newStarsPerDivision);
         var starsTwinkle = starsTotal/2;
         var starsSet = starsTotal - starsTwinkle;
@@ -1054,7 +1054,7 @@ window.onload = function() {
 
     game.updateStarField = function() {
         var divisions = 16;
-        var newStarsPerDivision = .011;
+        var newStarsPerDivision = .006;
         var starsTotal = (420*560/ (divisions*divisions)*newStarsPerDivision);
         var starsTwinkle = starsTotal/2;
         var starsSet = starsTotal - starsTwinkle;
