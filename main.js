@@ -790,6 +790,14 @@ window.onload = function() {
         return label;
     };
     
+    game.AddSprite = function(dimX, dimY, x, y, img) {
+        var sprite = new Sprite(dimX, dimY);
+        sprite.x = x;
+        sprite.y = y;
+        sprite.image = game.assets['assets/images/'+img];
+        return sprite;
+    }
+    
     game.reset = function() {
         myasteroid.end();
         myasteroid = null;
@@ -811,9 +819,7 @@ window.onload = function() {
         }
         else if (level == 5) {
             setTimeout('game.replaceScene(game.makeEnding())', 1000);
-            //setTimeout('game.popScene()', 1000);
             level = 1;
-            //curScene = game.rootScene;
         }
         
     };
@@ -928,14 +934,8 @@ window.onload = function() {
     // End game Scene Creation
     game.makeEnding = function() {
         var scene = new Scene();
-        var bg = new Sprite(420, 560);
-        bg.image = game.assets['assets/images/back2.png'];
-        scene.addChild(bg);
-        var endScreen = new Sprite (400, 400);
-        endScreen.image = game.assets['assets/images/endScreen.png'];
-        endScreen.x = 10;
-        endScreen.y = 80;
-        scene.addChild(endScreen);
+        scene.addChild(game.AddSprite(420, 560, 0, 0, 'back2.png'));
+        scene.addChild(game.AddSprite(400, 400, 10, 80, 'endScreen.png'));
         game.createStarField(scene);
         
         var popLabel = game.AddLabel(population+"", "rgb(255, 255, 255)", 65, 215);
@@ -959,12 +959,10 @@ window.onload = function() {
     
     // Setting the elements that are common to each level
     game.addLevelObjects = function(scene) {
-        var bg = new Sprite(420, 560);
 		trailList = new AsteroidTrailList();
 	    gravField = new GravityField();
         curScene.addChild(gravField);
-        bg.image = game.assets['assets/images/back2.png'];
-        scene.addChild(bg);
+        scene.addChild(game.AddSprite(420, 560, 0, 0, 'back2.png'));
         game.createStarField(scene);
 
         numAsteroidsLabel = game.AddLabel("Asteroids remaining: " + numAsteroids, "rgb(255, 255, 255)", 0, 540);
@@ -974,10 +972,7 @@ window.onload = function() {
         scene.addChild(populationLabel);
         
         /* Button for destroying the current asteroid */
-        var destroyButton = new Sprite(70, 30);
-        destroyButton.image = game.assets['assets/images/buttonDestroy.png'];
-        destroyButton.x = 148;
-        destroyButton.y = 5;
+        var destroyButton = game.AddSprite(70, 30, 148, 5, 'buttonDestroy.png');
         destroyButton.frame = 0;
         destroyButton.addEventListener('touchstart', function(e) {
             destroyButton.frame = 1;
@@ -990,10 +985,7 @@ window.onload = function() {
         scene.addChild(destroyButton);
         
         /* Button for viewing last 3 attempts */
-        var attemptsButton = new Sprite(92, 30);
-        attemptsButton.image = game.assets['assets/images/buttonAttempts.png'];
-        attemptsButton.x = 223;
-        attemptsButton.y = 5;
+        var attemptsButton = game.AddSprite(92, 30, 223, 5, 'buttonAttempts.png');
         attemptsButton.frame = 0;
         attemptsButton.addEventListener('touchstart', function(e) {
             game.assets['assets/sounds/click.mp3'].play();
@@ -1008,10 +1000,7 @@ window.onload = function() {
         scene.addChild(attemptsButton);
         
         /* Button for toggling the gravity field */
-        var gravFieldButton = new Sprite(95, 30);
-        gravFieldButton.image = game.assets['assets/images/buttonGravity.png'];
-        gravFieldButton.x = 320;
-        gravFieldButton.y = 5;
+        var gravFieldButton = game.AddSprite(95, 30, 320, 5, 'buttonGravity.png');
         gravFieldButton.frame = 0;
         gravFieldButton.addEventListener('touchstart', function(e) {
             game.assets['assets/sounds/click.mp3'].play();
