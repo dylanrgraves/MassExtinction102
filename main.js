@@ -137,7 +137,7 @@ Message = Class.create(Label,
 	},
 	
 	scroll: function(){
-	    if(this.ndx > 40 /*85*/) {
+	    if(this.ndx > 40) {
 			if(this.ndx > this.str.length)
 			    this.text = this.text.substr(1,this.text.length) + ' ';
 			else
@@ -231,6 +231,8 @@ Star = Class.create(Sprite,
             }
         }
     },
+    
+    
 });
 
 Belt = Class.create(Sprite, // extend the sprite class
@@ -342,8 +344,7 @@ Planet = Class.create(Sprite, // extend the sprite class
 
     collide: function(ast) {
         ast.die();
-        game.reset();
-        game.UpdateScore();
+        game.checkNextLevel();
     },
     
     addOrbit: function(planet, radius, angle, speed, clockwise) {
@@ -366,7 +367,7 @@ Earth = Class.create(Sprite, // extend the sprite class
     initialize: function(x, y, frequency) { //initialization
         this.wid = 40;
         this.hig = 40;
-        this.gravity = 3;
+        this.gravity = 36;
 
         Sprite.call(this, 40, 40); //initialize the sprite object
         this.image = game.assets['assets/images/earth.png'];
@@ -472,7 +473,8 @@ Earth = Class.create(Sprite, // extend the sprite class
 
     collide: function(ast) {
         ast.die();
-        game.NextLevel();
+        game.reducePopulation();
+        game.checkNextLevel();
     },
     
     end: function() {
@@ -511,21 +513,21 @@ Missle = Class.create(Sprite, {
 });
 
 AsteroidTrailList = Class.create({
-   initialize: function() {
-      this.trails = new Array();
-	  this.allDisplayed = false;
-   },
+    initialize: function() {
+        this.trails = new Array();
+	    this.allDisplayed = false;
+    },
    
-   addTrail: function(newTrail) {
+    addTrail: function(newTrail) {
       	if(this.trails.length == 3) {
 		    this.trails[0] = this.trails[1];
 			this.trails[1] = this.trails[2];
 			this.trails[2] = newTrail;
 		}else{
-		   this.trails[this.trails.length] = newTrail;
-		   }
-   },
-   display: function() {
+		    this.trails[this.trails.length] = newTrail;
+		}
+    },
+    display: function() {
 		if(this.allDisplayed) {
 			this.hideAll();
 			this.allDisplayed = false;
@@ -533,8 +535,8 @@ AsteroidTrailList = Class.create({
 		else {
 			this.hideLast();
 		}
-   },
-   displayAll: function() {
+    },
+    displayAll: function() {
 		for(index = 0; index < this.trails.length; index++) {
 			val = this.trails[index];
 			for(ndx = 0; ndx < val.dots.length; ndx++) {
@@ -542,23 +544,31 @@ AsteroidTrailList = Class.create({
 			}
 		}
 		this.allDisplayed = true;
-   },
-   hideAll: function() {
+    },
+    hideAll: function() {
 		for(index = 0; index < this.trails.length; index++) {
 			val = this.trails[index];
 			for(ndx = 0; ndx < val.dots.length; ndx++) {
 				curScene.removeChild(val.dots[ndx]);
 			}
 		}
-   },
-   hideLast: function() {
+    },
+    hideLast: function() {
         if(this.trails.length > 0) {
 			val = this.trails[this.trails.length - 1];
 			for(ndx = 0; ndx < val.dots.length; ndx++) {
 				curScene.removeChild(val.dots[ndx]);
 			}
 		}
-   }   
+    },
+    showLast: function() {
+        if(this.trails.length > 0) {
+			val = this.trails[this.trails.length - 1];
+			for(ndx = 0; ndx < val.dots.length; ndx++) {
+				curScene.addChild(val.dots[ndx]);
+			}
+		}
+    }  
 });
 
 AsteroidTrail = Class.create({
@@ -628,17 +638,19 @@ Asteroid = Class.create(Sprite, {
     
     shatter: function() {
         var hold;
-         //yeah, so this is too complicated to put in correctly. so im going to have the asteroid break into only 1 smaller piece
+
+        //yeah, so this is too complicated to put in correctly. so im going to have the asteroid break into only 1 smaller piece
         if(this.pieces < 3)
         {
-           hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random() + 1), this.pieces + 1);
-           game.setAsteroid(hold);
-           curScene.addChild(hold);
+            hold = new Asteroid(this.x - 4 + Math.random()*8, this.y, this.velX - 2 + Math.random()*4, this.velY/(Math.random() + 1), this.pieces + 1);
+            game.setAsteroid(hold);
+            curScene.addChild(hold);
         } else {
-         game.reset();
+            game.checkNextLevel(); // Remove an asteroid
         }
-
         this.die();
+
+        
     },
 
     getLoc: function() {
@@ -700,8 +712,13 @@ window.onload = function() {
     var end = false;
     var mp;
     var drop;
-    var points = 0;
-    var score = new Label("");
+    var startingAsteroids;
+    var numAsteroids = 0;
+    var numAsteroidsLabel = new Label("");
+    var startingPopulation;
+    var population;
+    var populationLabel = new Label("");
+    var deathToll;
 	var crosshair;
     
     game.scoreLabel = null;
@@ -723,10 +740,15 @@ window.onload = function() {
         'assets/images/blankButton.png',
 		'assets/images/asteroidTrail.png',
         'assets/images/title.png',
-        'assets/images/directions1.png',
-        'assets/images/directions2.png',
+        'assets/images/directions1-1.png',
+        'assets/images/directions1-2.png',
+        'assets/images/directions2-1.png',
+        'assets/images/directions2-2.png',
         'assets/images/directions3.png',
-        'assets/images/directions4.png',
+        'assets/images/buttonDestroy.png',
+        'assets/images/buttonAttempts.png',
+        'assets/images/buttonGravity.png',
+        'assets/images/endScreen.png',
 		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3',
@@ -739,8 +761,24 @@ window.onload = function() {
     drop.y = 0;
     drop.x = 0;
     
-    game.UpdateScore = function() {
-        points++;
+    game.subtractAstCount = function() {
+        numAsteroids--;
+    };
+    
+    game.reducePopulation = function() {
+        if (population !== 0) {
+            var toReduce = (1/(startingAsteroids*1.1)) * startingPopulation;
+            toReduce = toReduce * myasteroid.scaleX;
+            population -= parseInt(toReduce.toFixed());
+            deathToll += parseInt(toReduce.toFixed());
+        }
+    }
+    
+    game.checkNextLevel = function() {
+        if (numAsteroids === 0)
+            game.NextLevel();
+        else
+            game.reset();
     };
     
     game.AddLabel = function(text, color, x, y) {
@@ -754,6 +792,7 @@ window.onload = function() {
     
     game.reset = function() {
         myasteroid.end();
+        myasteroid = null;
         placed = false;
     }
     
@@ -771,9 +810,10 @@ window.onload = function() {
             setTimeout('game.replaceScene(game.makeLevel4())', 1000);
         }
         else if (level == 5) {
-            setTimeout('game.popScene()', 1000);
+            setTimeout('game.replaceScene(game.makeEnding())', 1000);
+            //setTimeout('game.popScene()', 1000);
             level = 1;
-            curScene = game.rootScene;
+            //curScene = game.rootScene;
         }
         
     };
@@ -807,13 +847,17 @@ window.onload = function() {
     // Level 1 Scene Creation
     game.makeLevel1 = function() {
         var scene = new Scene();
+        deathToll = 0;
+        numAsteroids = startingAsteroids = 3;
+        population = startingPopulation = 0;
         numplanets = 0;
-        earth = new Earth(190, 100, 2);
-		message = new Message('Year 4,540,000,000 BC - "This strange new planet seemed to have appeared in a neighboring galaxy, ' +
-		                      'devoid of any life as far as we can tell. Looks like the perfect target to try out our new ' +
-		                      'asteroid-launching weapon system!"');
+        earth = new Earth(190, 100, 0);
+		message = new Message("Year 4,540,000,000 BC - This strange new planet seemed to have appeared in a neighboring galaxy, " +
+		                      "devoid of any life as far as we can tell. Looks like the perfect target to try out our new " +
+		                      "asteroid-launching weapon system!");
 		game.addLevelObjects(scene);
-		scene.addChild(new Directions(125, 175, 170, 170, 'directions1.png'));
+		scene.addChild(new Directions(90, 175, 240, 80, 'directions1-1.png'));
+		scene.addChild(new Directions(63, 470, 293, 51, 'directions1-2.png'));	
         curScene = scene;
         return scene;
     };
@@ -821,16 +865,19 @@ window.onload = function() {
     //Level 2 Scene Creation
     game.makeLevel2 = function() {
         var scene = new Scene();
+        numAsteroids = startingAsteroids = 3;
+        population = startingPopulation = 0;
         numplanets = 1;
-        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
-        earth = new Earth(250, 110, 0);
+        myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
+        earth = new Earth(250, 120, 0);
         earth.addOrbit(myplanets[0], 80, 0, 1.5, false);
         message = new Message("Year 65,000,000 BC - It looks like our asteroid-launching system was a success! " +
                               "Our trial runs seemed to have broken a large chunk off this planet, which is now orbiting " +
                               "the planet like a moon or something. I'm sure those funny looking reptiles won't mind " +
                               "if we try to test our accuracy again.");
         game.addLevelObjects(scene);
-        scene.addChild(new Directions(20, 200, 170, 53, 'directions2.png'));
+        scene.addChild(new Directions(15, 180, 170, 53, 'directions2-1.png'));
+        scene.addChild(new Directions(220, 290, 185, 100, 'directions2-2.png'));
         curScene = scene;
         return scene;
     };
@@ -838,19 +885,21 @@ window.onload = function() {
     // Level 3 Scene Creation
     game.makeLevel3 = function() {
         var scene = new Scene();
+        numAsteroids = startingAsteroids = 8;
+        population = startingPopulation = 10000;
         numplanets = 4;
-        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
-        myplanets[1] = new Planet(100, 150, 1.25, 7, 'Large.png');
-        myplanets[2] = new Planet(210, 250, 1, 3, 'small.png');
-        myplanets[3] = new Planet(275, 300, 1, 5, 'medium.png');
-        earth = new Earth(150, 20, 4);
+        myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
+        myplanets[1] = new Planet(100, 150, 1.25, 10, 'Large.png');
+        myplanets[2] = new Planet(210, 250, 1, 2, 'small.png');
+        myplanets[3] = new Planet(275, 300, 1, 6, 'medium.png');
+        earth = new Earth(180, 50, 4);
         earth.addOrbit(myplanets[0], 70, 0, 1.5, false);
         message = new Message("Year 50,000 BC - Well, we seemed to have completely wiped out those reptiles with our last " +
                               "shot. It's alright, they got replaced by these hairy bipedal things anyway. They do seem to " +
                               "be far more intelligent than anything else we've seen on this planet so far. Hmm... We'll have " +
                               "to keep an eye on them.");
         game.addLevelObjects(scene);
-        scene.addChild(new Directions(230, 120, 185, 100, 'directions3.png'));
+        scene.addChild(new Directions(255, 140, 150, 80, 'directions3.png'));
         curScene = scene;
         return scene;
     };
@@ -858,19 +907,52 @@ window.onload = function() {
     // Level 4 Scene Creation
     game.makeLevel4 = function() {
         var scene = new Scene();
+        numAsteroids = startingAsteroids = 8;
+        population = startingPopulation = population * 999;
         numplanets = 5;
-        myplanets[0] = new Planet(0, 0, 1, 3, 'small.png');
-        myplanets[1] = new Planet(15, 200, 1, 7, 'Large.png');
-        myplanets[2] = new Planet(190, 200, 1, 7, 'Large.png');
-        myplanets[3] = new Planet(270, 200, 1, 5, 'medium.png');
-        myplanets[4] = new Planet(350, 200, 1.5, 7, 'Large.png');
+        myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
+        myplanets[1] = new Planet(15, 200, 1, 10, 'Large.png');
+        myplanets[2] = new Planet(190, 200, 1, 10, 'Large.png');
+        myplanets[3] = new Planet(270, 200, 1, 6, 'medium.png');
+        myplanets[4] = new Planet(350, 200, 1.5, 10, 'Large.png');
         earth = new Earth(250, 75, 0);
         earth.addOrbit(myplanets[0], 50, 90, 1.5, false);
         message = new Message("Year 338 BC - Wow, these 'humans' as they're called really have an aptitude for violence, even " +
                               "among themselves. I foresee that this species will become a threat in the future if we don't " +
                               "do anything now. Time to take matters into our own hands.");
         game.addLevelObjects(scene);
-        scene.addChild(new Directions(20, 50, 150, 80, 'directions4.png'));
+        curScene = scene;
+        return scene;
+    };
+    
+    // End game Scene Creation
+    game.makeEnding = function() {
+        var scene = new Scene();
+        var bg = new Sprite(420, 560);
+        bg.image = game.assets['assets/images/back2.png'];
+        scene.addChild(bg);
+        var endScreen = new Sprite (400, 400);
+        endScreen.image = game.assets['assets/images/endScreen.png'];
+        endScreen.x = 10;
+        endScreen.y = 80;
+        scene.addChild(endScreen);
+        game.createStarField(scene);
+        
+        var popLabel = game.AddLabel(population+"", "rgb(255, 255, 255)", 65, 215);
+        popLabel.font = "28px sans-serif";
+        scene.addChild(popLabel);
+        var deathLabel = game.AddLabel(deathToll+"", "rgb(255, 255, 255)", 65, 315);
+        deathLabel.font = "28px sans-serif";
+        scene.addChild(deathLabel);
+        
+        scene.addEventListener('enterframe', function() {
+            game.updateStarField();
+        });
+        scene.addEventListener('touchstart', function() {
+            game.popScene();
+            game.assets['assets/sounds/click.mp3'].play();
+        });
+        
         curScene = scene;
         return scene;
     };
@@ -880,15 +962,69 @@ window.onload = function() {
         var bg = new Sprite(420, 560);
 		trailList = new AsteroidTrailList();
 	    gravField = new GravityField();
-        scene.addChild(gravField);
+        curScene.addChild(gravField);
         bg.image = game.assets['assets/images/back2.png'];
         scene.addChild(bg);
         game.createStarField(scene);
 
-        scene.addChild(game.AddLabel("Click me to restart :D", "rgb(255, 255, 255)", 270, 5));
-		scene.addChild(game.AddLabel("Click to display last 3 attempts", "rgb(255, 255, 255)", 0, 5));
-        score = game.AddLabel("You have missed: "+points+" asteroids", "rgb(255, 255, 255)", 210, 540);
-        scene.addChild(score);
+        numAsteroidsLabel = game.AddLabel("Asteroids remaining: " + numAsteroids, "rgb(255, 255, 255)", 0, 540);
+        scene.addChild(numAsteroidsLabel);
+        populationLabel = game.AddLabel(population+"", "rgb(255, 255, 255)", 0, 22);
+        scene.addChild(game.AddLabel("Population:", "rgb(255, 255, 255)", 0, 5));
+        scene.addChild(populationLabel);
+        
+        /* Button for destroying the current asteroid */
+        var destroyButton = new Sprite(70, 30);
+        destroyButton.image = game.assets['assets/images/buttonDestroy.png'];
+        destroyButton.x = 148;
+        destroyButton.y = 5;
+        destroyButton.frame = 0;
+        destroyButton.addEventListener('touchstart', function(e) {
+            destroyButton.frame = 1;
+            game.assets['assets/sounds/click.mp3'].play();
+            game.checkNextLevel();
+        });
+        destroyButton.addEventListener('touchend', function(e) {
+            destroyButton.frame = 0;
+        });
+        scene.addChild(destroyButton);
+        
+        /* Button for viewing last 3 attempts */
+        var attemptsButton = new Sprite(92, 30);
+        attemptsButton.image = game.assets['assets/images/buttonAttempts.png'];
+        attemptsButton.x = 223;
+        attemptsButton.y = 5;
+        attemptsButton.frame = 0;
+        attemptsButton.addEventListener('touchstart', function(e) {
+            game.assets['assets/sounds/click.mp3'].play();
+            attemptsButton.frame = 1;
+            trailList.displayAll();
+        });
+        attemptsButton.addEventListener('touchend', function(e) {
+            attemptsButton.frame = 0;
+            trailList.hideAll();
+            trailList.showLast();
+        });
+        scene.addChild(attemptsButton);
+        
+        /* Button for toggling the gravity field */
+        var gravFieldButton = new Sprite(95, 30);
+        gravFieldButton.image = game.assets['assets/images/buttonGravity.png'];
+        gravFieldButton.x = 320;
+        gravFieldButton.y = 5;
+        gravFieldButton.frame = 0;
+        gravFieldButton.addEventListener('touchstart', function(e) {
+            game.assets['assets/sounds/click.mp3'].play();
+            if (gravField.displayed) {
+                gravFieldButton.frame = 0;
+                gravField.hide();
+            }
+            else {
+                gravFieldButton.frame = 1;
+                gravField.display();
+            }                
+        });
+        scene.addChild(gravFieldButton);
         
         for (i = 0; !end && i < 7; i++) {
             mybelt[i] = new Belt(62 * i, 420);
@@ -984,7 +1120,6 @@ window.onload = function() {
             this.placed = false;
             return;
         }
-
     };
     
     // Setting the level listeners 
@@ -1005,29 +1140,17 @@ window.onload = function() {
 				if(placed)
 					earth.effect(myasteroid);
             }
-            score.text = "You have missed: "+points+" asteroids";
+            numAsteroidsLabel.text = "Asteroids remaining: "+numAsteroids;
+            populationLabel.text = population+"";
         });
 
         scene.addEventListener('touchstart', function(e) {
-         pretouch = e;
-			crosshair = new Crosshair(e.x - 32,e.y - 32);
-			game.assets['assets/sounds/beep.mp3'].play();
-			scene.addChild(crosshair);
-            if (e.x > 270 && e.y < 20) {
-                myasteroid.end();
-                placed = false;
-                game.UpdateScore();
+            pretouch = e;
+            if (!end && !placed && e.y > 460) {
+                crosshair = new Crosshair(e.x - 32,e.y - 32);
+                game.assets['assets/sounds/beep.mp3'].play();
+                scene.addChild(crosshair);
             }
-			if(e.x < 100 && e.y < 100) {
-				trailList.displayAll();
-			}
-			if(e.x < 100 && e.y > 100 && e.y < 200) {
-				if(gravField.displayed) {
-					gravField.hide();
-				} else {
-					gravField.display();
-				}
-			}
         });
 
         scene.addEventListener('touchend', function(e) {
@@ -1043,6 +1166,7 @@ window.onload = function() {
                 scene.addChild(myplanets[8]);
                 placed = true;
 				game.assets['assets/sounds/shot.wav'].play();
+				game.subtractAstCount();
             }
 			crosshair.remove();
         });
