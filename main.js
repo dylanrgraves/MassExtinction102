@@ -624,7 +624,7 @@ Asteroid = Class.create(Sprite, {
 		if(this.age%2 == 0) {
 			this.trail.addDot(this.getLoc().x, this.getLoc().y);
 	    }
-	    game.fireTail(this.getLoc().x, this.getLoc().y, (32/this.pieces)/2);
+	    //game.fireTail(this.getLoc().x, this.getLoc().y, (32/this.pieces)/2);
         //animate the bear
         /*if (this.frame == 2) //if the bear is using frame 2...
         this.frame = 0; //reset the frame back to 0
