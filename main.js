@@ -895,10 +895,10 @@ window.onload = function() {
         numAsteroids = startingAsteroids = 8;
         population = startingPopulation = 10000;
         numplanets = 4;
-        myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
-        myplanets[1] = new Planet(100, 150, 1.25, 10, 'Large.png');
-        myplanets[2] = new Planet(210, 250, 1, 2, 'small.png');
-        myplanets[3] = new Planet(275, 300, 1, 6, 'medium.png');
+        myplanets[0] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[1] = new Planet(100, 150, 1.25, 5, 'Large.png');
+        myplanets[2] = new Planet(210, 250, 1, 1, 'small.png');
+        myplanets[3] = new Planet(275, 300, 1, 3, 'medium.png');
         earth = new Earth(180, 50, 4);
         earth.addOrbit(myplanets[0], 70, 0, 1.5, false);
         message = new Message("Year 50,000 BC - Well, we seemed to have completely wiped out those reptiles with our last " +
@@ -917,11 +917,11 @@ window.onload = function() {
         numAsteroids = startingAsteroids = 8;
         population = startingPopulation = population * 999;
         numplanets = 5;
-        myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
-        myplanets[1] = new Planet(15, 200, 1, 10, 'Large.png');
-        myplanets[2] = new Planet(190, 200, 1, 10, 'Large.png');
-        myplanets[3] = new Planet(270, 200, 1, 6, 'medium.png');
-        myplanets[4] = new Planet(350, 200, 1.5, 10, 'Large.png');
+        myplanets[0] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[1] = new Planet(15, 200, 1, 4, 'Large.png');
+        myplanets[2] = new Planet(190, 200, 1, 4, 'Large.png');
+        myplanets[3] = new Planet(270, 200, 1, 2, 'medium.png');
+        myplanets[4] = new Planet(350, 200, 1.5, 4, 'Large.png');
         earth = new Earth(250, 75, 0);
         earth.addOrbit(myplanets[0], 50, 90, 1.5, false);
         message = new Message("Year 338 BC - Wow, these 'humans' as they're called really have an aptitude for violence, even " +
@@ -1118,14 +1118,13 @@ window.onload = function() {
             game.updateStarField();
             mp.update();
             if (!end) {
-                if (this.age % numplanets > 0) return;
                 for (i = 0; i < numplanets; i++) {
-				    if(placed){
-						myplanets[i].effect(myasteroid);
-					}
-					for(gravLine = 0; gravLine < gravField.numLines; gravLine++) {
-						myplanets[i].effect(gravField.field[gravLine]);
-					}
+				      if(placed){
+						   myplanets[i].effect(myasteroid);
+					   }
+					   for(gravLine = 0; gravLine < gravField.numLines; gravLine++) {
+						   myplanets[i].effect(gravField.field[gravLine]);
+					   }
                 }
 				if(placed)
 					earth.effect(myasteroid);
