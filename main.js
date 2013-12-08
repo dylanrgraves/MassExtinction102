@@ -493,7 +493,7 @@ Missle = Class.create(Sprite, {
         this.x = locx;
         this.y = locy;
         this.frame = 0;
-        this.rotation = 270;    //probably should convert to radians
+        this.rotation = Math.atan(vy/vx)*180/Math.PI + 90;    //probably should convert to radians
     },
 
     onenterframe: function() {
