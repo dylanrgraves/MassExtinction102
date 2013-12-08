@@ -721,6 +721,7 @@ window.onload = function() {
     var deathToll;
 	var crosshair;
     
+	game.fps = 60;
     game.scoreLabel = null;
     game.rootScene.backgroundColor = "black";
     game.preload('assets/images/Large.png',
