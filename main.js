@@ -256,8 +256,8 @@ Explosion = Class.create(Sprite, // extend the sprite class
     initialize: function(x, y) { //initialization
         Sprite.call(this, 32, 32); //initialize the sprite object
         this.image = game.assets['assets/images/effect0.png'];
-        this.x = x;
-        this.y = y;
+        this.x = x - this.width/2;
+        this.y = y - this.height/2;
         this.frame = 0;
     },
     //define the enterframe event listener
@@ -701,8 +701,8 @@ Asteroid = Class.create(Sprite, {
 
         Sprite.call(this, 32, 32); //initialize the sprite object
         this.image = game.assets["assets/images/shooting.png"];
-        this.x = x;
-        this.y = y;
+        this.x = x - this.width/2;
+        this.y = y - this.height/2;
         this.frame = 1;
         this.wid = 32/number;
         this.radius = this.wid/2;
