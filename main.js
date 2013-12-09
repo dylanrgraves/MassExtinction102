@@ -759,6 +759,7 @@ window.onload = function() {
     var populationLabel = new Label("");
     var deathToll;
 	var crosshair;
+	var storyScreen;
     
     game.scoreLabel = null;
     game.fps = 30;
@@ -788,13 +789,20 @@ window.onload = function() {
         'assets/images/buttonDestroy.png',
         'assets/images/buttonAttempts.png',
         'assets/images/buttonGravity.png',
+            'assets/images/story1.png',
+            'assets/images/story2.png',
+            'assets/images/story3.png',
+            'assets/images/story4.png',
+            'assets/images/story5.png',
+            'assets/images/story6.png',
         'assets/images/endScreen.png',
 		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
         'assets/sounds/trackA.mp3',
 		'assets/sounds/shot.wav',
 		'assets/sounds/click.mp3',
-		'assets/sounds/beep.mp3');
+		'assets/sounds/beep.mp3',
+		    'assets/sounds/lock1.wav');
     
     drop = new Sprite(420, 560);
     drop.frame = 0;
@@ -848,20 +856,28 @@ window.onload = function() {
         game.reset();
         message.remove();
         ++level;
-        if (level == 2) {
-            setTimeout('game.replaceScene(game.makeLevel2())', 1000);
-        } 
-        else if (level == 3) {
-            setTimeout('game.replaceScene(game.makeLevel3())', 1000);
+        if (level < 6) {
+            setTimeout('game.makeLevel'+level+'()', 1000);
+        /*
+            storyScreen = new Scene();
+            storyScreen.addChild(game.AddSprite(420, 560, 0, 0, 'story'+level+'.png'));
+            storyScreen.addEventListener('touchstart', function(e) {
+                game.assets['assets/sounds/lock1.wav'].play();
+                game.popScene();
+                //eval('game.replaceScene(game.makeLevel'+level+'())');
+            });
+            eval('game.replaceScene(game.makeLevel'+level+'())');
+            game.pushScene(storyScreen);
+            setTimeout('game.donothing()', 1000);
+            */
         }
-        else if (level == 4) {
-            setTimeout('game.replaceScene(game.makeLevel4())', 1000);
-        }
-        else if (level == 5) {
+        else {
             setTimeout('game.replaceScene(game.makeEnding())', 1000);
             level = 1;
         }
-        
+    };
+    
+    game.donothing = function() {
     };
 
     game.onload = function() {
@@ -886,6 +902,13 @@ window.onload = function() {
         newGameButton.addEventListener(Event.TOUCH_START, function(e) {
             game.assets['assets/sounds/click.mp3'].play();
 			game.pushScene(game.makeLevel1());
+			storyScreen = new Scene();
+            storyScreen.addChild(game.AddSprite(420, 560, 0, 0, 'story1.png'));
+            storyScreen.addEventListener('touchstart', function(e) {
+                game.popScene();
+                game.assets['assets/sounds/lock1.wav'].play();
+            });
+            game.pushScene(storyScreen);
         });
         game.rootScene.addChild(newGameButton);
     };
@@ -898,9 +921,6 @@ window.onload = function() {
         population = startingPopulation = 0;
         numplanets = 0;
         earth = new Earth(190, 100, 0);
-		game.addMessage("Year 4,540,000,000 BC - This strange new planet seemed to have appeared in a neighboring galaxy, " +
-		                      "devoid of any life as far as we can tell. Looks like the perfect target to try out our new " +
-		                      "asteroid-launching weapon system!");
 		game.addLevelObjects(scene);
 		scene.addChild(new Directions(90, 175, 240, 80, 'directions1-1.png'));
 		scene.addChild(new Directions(63, 470, 293, 51, 'directions1-2.png'));	
@@ -917,14 +937,12 @@ window.onload = function() {
         myplanets[0] = new Planet(0, 0, 1, 2, 'small.png');
         earth = new Earth(250, 120, 0);
         earth.addOrbit(myplanets[0], 80, 0, 1.5, false);
-        message = new Message("Year 65,000,000 BC - It looks like our asteroid-launching system was a success! " +
-                              "Our trial runs seemed to have broken a large chunk off this planet, which is now orbiting " +
-                              "the planet like a moon or something. I'm sure those funny looking reptiles won't mind " +
-                              "if we try to test our accuracy again.");
         game.addLevelObjects(scene);
         scene.addChild(new Directions(15, 180, 170, 53, 'directions2-1.png'));
         scene.addChild(new Directions(220, 290, 185, 100, 'directions2-2.png'));
         curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
         return scene;
     };
     
@@ -938,15 +956,13 @@ window.onload = function() {
         myplanets[1] = new Planet(100, 150, 1.25, 5, 'Large.png');
         myplanets[2] = new Planet(210, 250, 1, 1, 'small.png');
         myplanets[3] = new Planet(275, 300, 1, 3, 'medium.png');
-        earth = new Earth(180, 50, 4);
+        earth = new Earth(180, 50, 0);
         earth.addOrbit(myplanets[0], 70, 0, 1.5, false);
-        message = new Message("Year 50,000 BC - Well, we seemed to have completely wiped out those reptiles with our last " +
-                              "shot. It's alright, they got replaced by these hairy bipedal things anyway. They do seem to " +
-                              "be far more intelligent than anything else we've seen on this planet so far. Hmm... We'll have " +
-                              "to keep an eye on them.");
         game.addLevelObjects(scene);
         scene.addChild(new Directions(255, 140, 150, 80, 'directions3.png'));
         curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
         return scene;
     };
     
@@ -954,7 +970,7 @@ window.onload = function() {
     game.makeLevel4 = function() {
         var scene = new Scene();
         numAsteroids = startingAsteroids = 8;
-        population = startingPopulation = population * 999;
+        population = startingPopulation = population * 123;
         numplanets = 5;
         myplanets[0] = new Planet(0, 0, 1, 1, 'small.png');
         myplanets[1] = new Planet(15, 200, 1, 4, 'Large.png');
@@ -963,11 +979,29 @@ window.onload = function() {
         myplanets[4] = new Planet(350, 200, 1.5, 4, 'Large.png');
         earth = new Earth(250, 75, 0);
         earth.addOrbit(myplanets[0], 50, 90, 1.5, false);
-        message = new Message("Year 338 BC - Wow, these 'humans' as they're called really have an aptitude for violence, even " +
-                              "among themselves. I foresee that this species will become a threat in the future if we don't " +
-                              "do anything now. Time to take matters into our own hands.");
         game.addLevelObjects(scene);
         curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
+        return scene;
+    };
+    
+    // Level 5 Scene Creation
+    game.makeLevel5 = function() {
+        var scene = new Scene();
+        numAsteroids = startingAsteroids = 8;
+        population = startingPopulation = population * 123;
+        numplanets = 3;
+        myplanets[0] = new Planet(200, 225, 1, 4, 'Large.png');
+        myplanets[1] = new Planet(0, 0, 1, 2, 'medium.png');
+        myplanets[2] = new Planet(0, 0, 1, 1, 'small.png');
+        earth = new Earth(220, 65, 4);
+        myplanets[0].addOrbit(myplanets[1], 100, 0, 0.8, true)
+        myplanets[1].addOrbit(myplanets[2], 45, 180, 1.5, false)
+        game.addLevelObjects(scene);
+        curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
         return scene;
     };
     
@@ -994,8 +1028,19 @@ window.onload = function() {
         });
         
         curScene = scene;
+        game.replaceScene(scene);
         return scene;
     };
+    
+    game.addStoryScreen = function() {
+        storyScreen = new Scene();
+        storyScreen.addChild(game.AddSprite(420, 560, 0, 0, 'story'+level+'.png'));
+        storyScreen.addEventListener('touchstart', function(e) {
+            game.assets['assets/sounds/lock1.wav'].play();
+            game.popScene();
+        });
+        game.pushScene(storyScreen);
+    }
     
     // Setting the elements that are common to each level
     game.addLevelObjects = function(scene) {
@@ -1150,7 +1195,7 @@ window.onload = function() {
             return;
         }
     };
-
+    
     game.addMessage = function(txt) {
       message.remove();
       message = new Message(txt);
