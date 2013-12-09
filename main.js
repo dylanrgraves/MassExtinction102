@@ -343,7 +343,28 @@ Planet = Class.create(Sprite, // extend the sprite class
     },
 
     collide: function(ast) {
+        var i, text;
+
+        i = Math.random()*6;
+
+        if(i < 1) {
+            text = "You Capsized Uranus";
+        }
+        else if(i < 2) {
+            text = "Close, try using the gravity to your advantage";
+        }
+        else if(i < 3) {
+            text = "You can use the the Display Last 3 Attempts button to try and improve your aim :)";
+        }
+        else if (i < 4){
+            text = "Did you forget your space glasses?";
+        } else if (i < 5){
+            text = "Our prophets stated that planet was supposed to hearld the Bringer of Peace... Oh well";
+        } else if (i <= 6){
+            text = "Try again";
+        }
         ast.die();
+        game.addMessage(text);
         game.checkNextLevel();
     },
     
@@ -472,7 +493,24 @@ Earth = Class.create(Sprite, // extend the sprite class
     },
 
     collide: function(ast) {
+        var i, text;
+
+        i = Math.random()*4;
+
+        if(i < 1) {
+            text = "Is it me? Or does the planet look meatier?";
+        }
+        else if(i < 2) {
+            text = "10 points for us";
+        }
+        else if(i < 3) {
+            text = "Good Job";
+        }
+        else {
+            text = "Well, look who is bad asteroid";
+        }
         ast.die();
+        game.addMessage(text);
         game.reducePopulation();
         game.checkNextLevel();
     },
@@ -705,7 +743,7 @@ window.onload = function() {
     var level = 1;
     var myasteroid = null;
     var earth;
-    var message;
+    var message = new Message("");
     var placed = false;
     var pretouch;
     var mybelt = [];
@@ -859,7 +897,7 @@ window.onload = function() {
         population = startingPopulation = 0;
         numplanets = 0;
         earth = new Earth(190, 100, 0);
-		message = new Message("Year 4,540,000,000 BC - This strange new planet seemed to have appeared in a neighboring galaxy, " +
+		game.addMessage("Year 4,540,000,000 BC - This strange new planet seemed to have appeared in a neighboring galaxy, " +
 		                      "devoid of any life as far as we can tell. Looks like the perfect target to try out our new " +
 		                      "asteroid-launching weapon system!");
 		game.addLevelObjects(scene);
@@ -1110,6 +1148,12 @@ window.onload = function() {
             this.placed = false;
             return;
         }
+    };
+
+    game.addMessage = function(txt) {
+      message.remove();
+      message = new Message(txt);
+      curScene.addChild(message);
     };
     
     // Setting the level listeners 
