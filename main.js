@@ -1311,7 +1311,7 @@ window.onload = function() {
                 var lenX = myX - e.x;
                 var lenY = myY - e.y;
                 var distance = Math.sqrt(lenX * lenX + lenY * lenY) - .1;
-                myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance, 1);
+                myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, lenY / (5 * 1 - lenY/100), 1);
 				var exWidth = game.assets['assets/images/effect0.png'].width/4;
                 myplanets[8] = new Explosion(myX - exWidth/2, myY - exWidth/2);
                 scene.addChild(myasteroid);
