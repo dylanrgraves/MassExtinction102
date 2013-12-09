@@ -1346,9 +1346,6 @@ window.onload = function() {
                 scene.addChild(crosshair);
             }
         });
-//		scene,addEventListener('touchdrag', function(e) {
-			
-//		});
         scene.addEventListener('touchend', function(e) {
             if (!end && !placed && pretouch.y > 460 && numAsteroids > 0) {
                 var myX = pretouch.x;
