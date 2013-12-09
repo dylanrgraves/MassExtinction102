@@ -302,7 +302,7 @@ Planet = Class.create(Sprite, // extend the sprite class
         var distance = Math.sqrt(len.x * len.x + len.y * len.y);
 
         distance *= distance;
-        
+        I am typing fake things for my .
         var force = new vector(len.x*this.gravity/distance, len.y*this.gravity/distance);
 
         return force;
