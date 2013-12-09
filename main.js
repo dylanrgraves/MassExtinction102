@@ -256,8 +256,8 @@ Explosion = Class.create(Sprite, // extend the sprite class
     initialize: function(x, y) { //initialization
         Sprite.call(this, 32, 32); //initialize the sprite object
         this.image = game.assets['assets/images/effect0.png'];
-        this.x = x - this.width/2;
-        this.y = y - this.height/2;
+        this.x = x;
+        this.y = y;
         this.frame = 0;
     },
     //define the enterframe event listener
@@ -1312,7 +1312,8 @@ window.onload = function() {
                 var lenY = myY - e.y;
                 var distance = Math.sqrt(lenX * lenX + lenY * lenY) - .1;
                 myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, 8 * lenY / distance, 1);
-                myplanets[8] = new Explosion(myX, myY);
+				var exWidth = game.assets['assets/images/effect0.png'].width/4;
+                myplanets[8] = new Explosion(myX - exWidth/2, myY - exWidth/2);
                 scene.addChild(myasteroid);
                 scene.addChild(myplanets[8]);
                 placed = true;
