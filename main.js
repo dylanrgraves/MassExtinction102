@@ -168,16 +168,17 @@ Directions = Class.create(Sprite,
         this.image = game.assets['assets/images/' + img];
         this.x = x;
         this.y = y;
-        this.timeout = 200;
+        this.timeout = 100;
     },
     
     onenterframe: function() {
+        /*
         if (this.timeout > 0)
             this.timeout--;
         else if (this.opacity > 0)
             this.opacity = (this.opacity - 0.01).toFixed(2);
+        */
         //Code for blinking instructions
-        /*
         if (this.timeout === 0 && this.opacity > 0)
             this.opacity = (this.opacity - 0.05).toFixed(2);
         else if (this.timeout !== 0 && this.opacity < 1)
@@ -188,7 +189,6 @@ Directions = Class.create(Sprite,
         }
         else
             this.timeout--;
-        */
     }   
 });
 
@@ -783,18 +783,19 @@ window.onload = function() {
         'assets/images/title.png',
         'assets/images/directions1-1.png',
         'assets/images/directions1-2.png',
+        'assets/images/directions1-3.png',
         'assets/images/directions2-1.png',
         'assets/images/directions2-2.png',
         'assets/images/directions3.png',
         'assets/images/buttonDestroy.png',
         'assets/images/buttonAttempts.png',
         'assets/images/buttonGravity.png',
-            'assets/images/story1.png',
-            'assets/images/story2.png',
-            'assets/images/story3.png',
-            'assets/images/story4.png',
-            'assets/images/story5.png',
-            'assets/images/story6.png',
+        'assets/images/story1.png',
+        'assets/images/story2.png',
+        'assets/images/story3.png',
+        'assets/images/story4.png',
+        'assets/images/story5.png',
+        'assets/images/story6.png',
         'assets/images/endScreen.png',
 		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
@@ -802,7 +803,7 @@ window.onload = function() {
 		'assets/sounds/shot.wav',
 		'assets/sounds/click.mp3',
 		'assets/sounds/beep.mp3',
-		    'assets/sounds/lock1.wav');
+		'assets/sounds/lock1.wav');
     
     drop = new Sprite(420, 560);
     drop.frame = 0;
@@ -847,7 +848,8 @@ window.onload = function() {
     }
     
     game.reset = function() {
-        myasteroid.end();
+        if (myasteroid != null)
+            myasteroid.end();
         myasteroid = null;
         placed = false;
     }
@@ -856,28 +858,13 @@ window.onload = function() {
         game.reset();
         message.remove();
         ++level;
-        if (level < 6) {
+        if (level < 7) {
             setTimeout('game.makeLevel'+level+'()', 1000);
-        /*
-            storyScreen = new Scene();
-            storyScreen.addChild(game.AddSprite(420, 560, 0, 0, 'story'+level+'.png'));
-            storyScreen.addEventListener('touchstart', function(e) {
-                game.assets['assets/sounds/lock1.wav'].play();
-                game.popScene();
-                //eval('game.replaceScene(game.makeLevel'+level+'())');
-            });
-            eval('game.replaceScene(game.makeLevel'+level+'())');
-            game.pushScene(storyScreen);
-            setTimeout('game.donothing()', 1000);
-            */
         }
         else {
-            setTimeout('game.replaceScene(game.makeEnding())', 1000);
+            setTimeout('game.makeEnding()', 1000);
             level = 1;
         }
-    };
-    
-    game.donothing = function() {
     };
 
     game.onload = function() {
@@ -920,10 +907,11 @@ window.onload = function() {
         numAsteroids = startingAsteroids = 3;
         population = startingPopulation = 0;
         numplanets = 0;
-        earth = new Earth(190, 100, 0);
+        earth = new Earth(190, 120, 0);
 		game.addLevelObjects(scene);
-		scene.addChild(new Directions(90, 175, 240, 80, 'directions1-1.png'));
-		scene.addChild(new Directions(63, 470, 293, 51, 'directions1-2.png'));	
+		scene.addChild(new Directions(90, 195, 240, 80, 'directions1-1.png'));
+		scene.addChild(new Directions(0, 460, 420, 100, 'directions1-2.png'));	
+		scene.addChild(new Directions(148, 40, 270, 40, 'directions1-3.png'));	
         curScene = scene;
         return scene;
     };
@@ -973,7 +961,7 @@ window.onload = function() {
         population = startingPopulation = population * 123;
         numplanets = 5;
         myplanets[0] = new Planet(0, 0, 1, 1, 'small.png');
-        myplanets[1] = new Planet(15, 200, 1, 4, 'Large.png');
+        myplanets[1] = new Planet(15, 200, 1, 2, 'medium.png');
         myplanets[2] = new Planet(190, 200, 1, 4, 'Large.png');
         myplanets[3] = new Planet(270, 200, 1, 2, 'medium.png');
         myplanets[4] = new Planet(350, 200, 1.5, 4, 'Large.png');
@@ -996,8 +984,34 @@ window.onload = function() {
         myplanets[1] = new Planet(0, 0, 1, 2, 'medium.png');
         myplanets[2] = new Planet(0, 0, 1, 1, 'small.png');
         earth = new Earth(220, 65, 4);
-        myplanets[0].addOrbit(myplanets[1], 100, 0, 0.8, true)
-        myplanets[1].addOrbit(myplanets[2], 45, 180, 1.5, false)
+        myplanets[0].addOrbit(myplanets[1], 100, 0, 1, true)
+        myplanets[1].addOrbit(myplanets[2], 45, 180, 1.8, false)
+        game.addLevelObjects(scene);
+        curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
+        return scene;
+    };
+    
+    // Level 6 Scene Creation
+    game.makeLevel6 = function() {
+        var scene = new Scene();
+        numAsteroids = startingAsteroids = 8;
+        population = startingPopulation = population * 123;
+        numplanets = 8;
+        myplanets[0] = new Planet(200, 225, 1, 1, 'small.png');
+        myplanets[1] = new Planet(50, 225, 1, 4, 'Large.png');
+        myplanets[2] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[3] = new Planet(250, 275, 1, 4, 'Large.png');
+        myplanets[4] = new Planet(0, 0, 1, 2, 'medium.png');
+        myplanets[5] = new Planet(330, 125, 1, 2, 'medium.png');
+        myplanets[6] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[7] = new Planet(160, 380, 1, 2, 'medium.png');
+        earth = new Earth(200, 50, 4);
+        earth.addOrbit(myplanets[0], 60, 0, 1, false);
+        myplanets[1].addOrbit(myplanets[2], 80, 90, 1.8, true);
+        myplanets[3].addOrbit(myplanets[4], 80, 300, 1.8, false);
+        myplanets[5].addOrbit(myplanets[6], 50, 160, 1, true);
         game.addLevelObjects(scene);
         curScene = scene;
         game.replaceScene(scene);
@@ -1049,6 +1063,11 @@ window.onload = function() {
         curScene.addChild(gravField);
         scene.addChild(game.AddSprite(420, 560, 0, 0, 'back2.png'));
         game.createStarField(scene);
+
+        for (i = 0; i < numplanets; i++) {
+            scene.addChild(myplanets[i]);
+        }
+        scene.addChild(earth);
 
         numAsteroidsLabel = game.AddLabel("Asteroids remaining: " + numAsteroids, "rgb(255, 255, 255)", 0, 540);
         scene.addChild(numAsteroidsLabel);
@@ -1104,20 +1123,17 @@ window.onload = function() {
             mybelt[i] = new Belt(62 * i, 420);
             scene.addChild(mybelt[i]);
         }
-        for (i = 0; i < numplanets; i++) {
-            scene.addChild(myplanets[i]);
-        }
-        scene.addChild(earth);
-        scene.addChild(message);
+        
+        //scene.addChild(message);
         game.setLevelListeners(scene);
     };
 
     game.setAsteroid = function(asteroid) {
-      myasteroid = asteroid;
+        myasteroid = asteroid;
     };
 
     game.isPlaced = function() {
-      return this.placed;
+        return this.placed;
     };
 
     //StarField set up
@@ -1225,7 +1241,7 @@ window.onload = function() {
 
         scene.addEventListener('touchstart', function(e) {
             pretouch = e;
-            if (!end && !placed && e.y > 460) {
+            if (!end && !placed && e.y > 460 && numAsteroids > 0) {
                 crosshair = new Crosshair(e.x - 32,e.y - 32);
                 game.assets['assets/sounds/beep.mp3'].play();
                 scene.addChild(crosshair);
@@ -1233,7 +1249,7 @@ window.onload = function() {
         });
 
         scene.addEventListener('touchend', function(e) {
-            if (!end && !placed && pretouch.y > 460) {
+            if (!end && !placed && pretouch.y > 460 && numAsteroids > 0) {
                 var myX = pretouch.x;
                 var myY = pretouch.y;
                 var lenX = myX - e.x;
