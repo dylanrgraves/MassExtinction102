@@ -406,7 +406,7 @@ Planet = Class.create(Sprite, // extend the sprite class
         i = Math.random()*12;
 
         if(i < 1) {
-            text = "Don't make me Capsized Uranus";
+            text = "Don't make me Capsize Uranus";
         } else if(i < 2) {
             text = "Close, try using the gravity to your advantage";
         } else if(i < 3) {
