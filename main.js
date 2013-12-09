@@ -37,17 +37,76 @@ Tail = Class.create(Sprite,{
 GravityLine = Class.create(Sprite,{
 	initialize: function(x,y) {
 		Sprite.call(this,20,4);
-		this.backgroundColor = "red";
+		this.backgroundColor = "rgb(255,0,0)";
 		this.x = x;
 		this.y = y;
+		this.tempforce;
+		this.forcex = 0;
+		this.forcey = 0;
+		this.magnitude = 0;
 	},
 	
-	update: function(dx, dy){
-		if(dx > 0){
-		    this.rotation = 45;
-		} else {
-			this.rotation = -45;
+	update: function(planets, size, earth){
+		this.forcex = 0;
+		this.forcey = 0;
+		for(i = 0; i < size; i ++) {
+			this.tempforce = planets[i].gravityAt(this.x, this.y);
+			this.forcex += this.tempforce.x;
+			this.forcey += this.tempforce.y;
 		}
+		this.tempforce = earth.gravityAt(this.x, this.y);
+		this.forcex += this.tempforce.x;
+		this.forcey += this.tempforce.y;
+		
+		this.magnitude = Math.sqrt(this.forcex *this.forcex + this.forcey *this.forcey) * 300;
+		var blue = 255 - this.magnitude;
+		//this.backgroundColor = "rgb(" + this.magnitude + "," + 0 + "," + this.blue + ")"; I dont know why this doesnt work.
+		if(this.magnitude > 255) {
+			this.backgroundColor = "rgb(255,0,0)";
+		}
+		else if (this.magnitude > 240) { 
+			this.backgroundColor = "rgb(240,0,15)";
+		}
+		else if (this.magnitude > 225) { 
+			this.backgroundColor = "rgb(225,0,30)";
+		}
+		else if (this.magnitude > 210) { 
+			this.backgroundColor = "rgb(210,0,45)";
+		}
+		else if (this.magnitude > 195) { 
+			this.backgroundColor = "rgb(195,0,60)";
+		}
+		else if (this.magnitude > 175) { 
+			this.backgroundColor = "rgb(175,0,80)";
+		}
+		else if (this.magnitude > 155) { 
+			this.backgroundColor = "rgb(155,0,100)";
+		}
+		else if (this.magnitude > 135) { 
+			this.backgroundColor = "rgb(135,0,120)";
+		}
+		else if (this.magnitude > 115) { 
+			this.backgroundColor = "rgb(115,0,140)";
+		}
+		else if (this.magnitude > 95) { 
+			this.backgroundColor = "rgb(95,0,160)";
+		}
+		else if (this.magnitude > 80) { 
+			this.backgroundColor = "rgb(80,0,175)";
+		}
+		else if (this.magnitude > 60) { 
+			this.backgroundColor = "rgb(60,0,195)";
+		}
+		else if (this.magnitude > 40) { 
+			this.backgroundColor = "rgb(40,0,215)";
+		}
+		else if (this.magnitude > 20) { 
+			this.backgroundColor = "rgb(20,0,235)";
+		}
+		else {
+			this.backgroundColor = "rgb(0,0,255)";
+		}
+		this.rotation = Math.atan((this.forcey/this.forcex)) * 180 / Math.PI;
 	},
 	
 	getLoc: function() {
@@ -71,9 +130,9 @@ GravityField = Class.create(Node,
 			}
 	    }
 	},
-	update: function() {
-	    for(line = 0; line < numLines; line++) {
-			this.field[line].update();
+	update: function(planets, size, earth) {
+	    for(line = 0; line < this.numLines; line++) {
+			this.field[line].update(planets, size, earth);
 		}
 	},
 	display: function() {
@@ -324,7 +383,6 @@ Planet = Class.create(Sprite, // extend the sprite class
         var distance = Math.sqrt(len.x * len.x + len.y * len.y);
 
         distance *= distance;
-        I am typing fake things for my .
         var force = new vector(len.x*this.gravity/distance, len.y*this.gravity/distance);
 
         return force;
@@ -477,7 +535,7 @@ Earth = Class.create(Sprite, // extend the sprite class
         var distance = this.getDistanceFrom(astLoc.x, astLoc.y);
         var force = this.gravityAt(astLoc.x, astLoc.y);
         
-        if (distance <= this.wid/2 + ast.getRad()) {
+        if (ast instanceof Asteroid && distance <= this.wid/2 + ast.getRad()) {
             this.collide(ast);
         }
         ast.update(force.x, force.y);
@@ -1228,12 +1286,10 @@ window.onload = function() {
 				      if(placed){
 						   myplanets[i].effect(myasteroid);
 					   }
-					   for(gravLine = 0; gravLine < gravField.numLines; gravLine++) {
-						   myplanets[i].effect(gravField.field[gravLine]);
-					   }
                 }
 				if(placed)
 					earth.effect(myasteroid);
+				gravField.update(myplanets, numplanets, earth);
             }
             numAsteroidsLabel.text = "Asteroids remaining: "+numAsteroids;
             populationLabel.text = population+"";
