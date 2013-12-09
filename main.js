@@ -441,8 +441,8 @@ Planet = Class.create(Sprite, // extend the sprite class
         this.orbitSpeed = speed;
         this.clockwise = clockwise;
         this.orbit = planet;
-        this.orbit.x = this.midX - this.orbit.realWidth/2 + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
-        this.orbit.y = this.midY - this.orbit.realHeight/2 + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
+        this.orbit.x = this.midX - (this.orbit.realWidth/2)/Math.sqrt(2) + Math.floor(this.radius * Math.cos(this.orbitAngle * Math.PI / 180));
+        this.orbit.y = this.midY - (this.orbit.realHeight/2)/Math.sqrt(2) + Math.floor(this.radius * Math.sin(this.orbitAngle * Math.PI / 180));
     },
     
     end: function() {
