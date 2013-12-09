@@ -403,10 +403,10 @@ Planet = Class.create(Sprite, // extend the sprite class
     collide: function(ast) {
         var i, text;
 
-        i = Math.random()*8;
+        i = Math.random()*12;
 
         if(i < 1) {
-            text = "You Capsized Uranus";
+            text = "Don't make me Capsized Uranus";
         } else if(i < 2) {
             text = "Close, try using the gravity to your advantage";
         } else if(i < 3) {
@@ -420,7 +420,15 @@ Planet = Class.create(Sprite, // extend the sprite class
         } else if (i <= 7){
             text = "It's ok, there wasn't enough space for them anyway.";
         } else if (i <= 8){
-            text = "Well... nothing cleans a planet like a meteor shower";
+            text = "That planet did need a meteor shower";
+        } else if (i <=9) {
+            text = "It's alright, here is a constellation prize!";
+        } else if( i<= 10) {
+            text = "That planet had no atmosphere anyway.";
+        } else if( i<= 11) {
+            text = "Come on, you have to comet yourself to this!";
+        } else if( i<= 12) {
+            text = "*Spacepalm*";
         }
         ast.die();
         game.addMessage(text);
@@ -554,16 +562,20 @@ Earth = Class.create(Sprite, // extend the sprite class
     collide: function(ast) {
         var i, text;
 
-        i = Math.random()*4;
+         i = Math.random()*6;
 
-        if(i < 1) {
+        if(i < 1.5) {
             text = "Is it me? Or does the planet look meatier?";
         }
         else if(i < 2) {
-            text = "10 points for us";
+            text = "Take that Gryffen people, 10 points for us";
         }
         else if(i < 3) {
             text = "Good Job";
+        } else if (i < 4.5) {
+            text = "GOOOOOOOOOOOOAAAAAAAAAAALLLLLL";
+        } else if(i < 5.5) {
+            text = "Out of this world!";
         }
         else {
             text = "Well, look who is bad asteroid";
