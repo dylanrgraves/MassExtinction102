@@ -345,23 +345,24 @@ Planet = Class.create(Sprite, // extend the sprite class
     collide: function(ast) {
         var i, text;
 
-        i = Math.random()*6;
+        i = Math.random()*8;
 
         if(i < 1) {
             text = "You Capsized Uranus";
-        }
-        else if(i < 2) {
+        } else if(i < 2) {
             text = "Close, try using the gravity to your advantage";
-        }
-        else if(i < 3) {
+        } else if(i < 3) {
             text = "You can use the the Display Last 3 Attempts button to try and improve your aim :)";
-        }
-        else if (i < 4){
+        } else if (i < 4){
             text = "Did you forget your space glasses?";
         } else if (i < 5){
             text = "Our prophets stated that planet was supposed to hearld the Bringer of Peace... Oh well";
         } else if (i <= 6){
             text = "Try again";
+        } else if (i <= 7){
+            text = "It's ok, there wasn't enough space for them anyway.";
+        } else if (i <= 8){
+            text = "Well... nothing cleans a planet like a meteor shower";
         }
         ast.die();
         game.addMessage(text);
