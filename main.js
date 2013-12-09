@@ -854,6 +854,7 @@ window.onload = function() {
         'assets/images/story4.png',
         'assets/images/story5.png',
         'assets/images/story6.png',
+        'assets/images/story7.png',
         'assets/images/endScreen.png',
 		'assets/images/crosshair.png',
         'assets/sounds/Explosion.wav',
@@ -916,7 +917,7 @@ window.onload = function() {
         game.reset();
         message.remove();
         ++level;
-        if (level < 7) {
+        if (level < 8) {
             setTimeout('game.makeLevel'+level+'()', 1000);
         }
         else {
@@ -995,7 +996,7 @@ window.onload = function() {
     // Level 3 Scene Creation
     game.makeLevel3 = function() {
         var scene = new Scene();
-        numAsteroids = startingAsteroids = 8;
+        numAsteroids = startingAsteroids = 6;
         population = startingPopulation = 10000;
         numplanets = 4;
         myplanets[0] = new Planet(0, 0, 1, 1, 'small.png');
@@ -1070,6 +1071,48 @@ window.onload = function() {
         myplanets[1].addOrbit(myplanets[2], 80, 90, 1.8, true);
         myplanets[3].addOrbit(myplanets[4], 80, 300, 1.8, false);
         myplanets[5].addOrbit(myplanets[6], 50, 160, 1, true);
+        game.addLevelObjects(scene);
+        curScene = scene;
+        game.replaceScene(scene);
+        game.addStoryScreen();
+        return scene;
+    };
+    
+    // Level 7 Scene Creation
+    game.makeLevel7 = function() {
+        var scene = new Scene();
+        numAsteroids = startingAsteroids = 10;
+        population = startingPopulation = population * 123;
+        numplanets = 17;
+        myplanets[0] = new Planet(15, 230, 1, 1, 'small.png');
+        myplanets[1] = new Planet(15, 230, 1, 1, 'small.png');
+        myplanets[2] = new Planet(15, 230, 1, 1, 'small.png');
+        myplanets[3] = new Planet(0, 225, 1, 4, 'Large.png');
+        myplanets[4] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[5] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[6] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[7] = new Planet(0, 0, 1, 1, 'small.png');
+        
+        myplanets[8] = new Planet(405, 230, 1, 1, 'small.png');
+        myplanets[9] = new Planet(405, 230, 1, 1, 'small.png');
+        myplanets[10] = new Planet(400, 230, 1, 1, 'small.png');
+        myplanets[11] = new Planet(380, 225, 1, 4, 'Large.png');
+        myplanets[12] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[13] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[14] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[15] = new Planet(0, 0, 1, 1, 'small.png');
+        myplanets[16] = new Planet(200, 400, 1, 2, 'medium.png');
+
+        earth = new Earth(200, 50, 6);
+        myplanets[0].addOrbit(myplanets[4], 60, 0, 1.8, true);
+        myplanets[1].addOrbit(myplanets[5], 110, 0, 1.7, true);
+        myplanets[2].addOrbit(myplanets[6], 160, 0, 1.6, true);
+        myplanets[3].addOrbit(myplanets[7], 210, 0, 1.5, true);
+        myplanets[8].addOrbit(myplanets[12], 60, 0, 1.8, false);
+        myplanets[9].addOrbit(myplanets[13], 110, 0, 1.7, false);
+        myplanets[10].addOrbit(myplanets[14], 160, 0, 1.6, false);
+        myplanets[11].addOrbit(myplanets[15], 210, 0, 1.5, false);
+        
         game.addLevelObjects(scene);
         curScene = scene;
         game.replaceScene(scene);
@@ -1313,9 +1356,9 @@ window.onload = function() {
                 var distance = Math.sqrt(lenX * lenX + lenY * lenY) - .1;
                 myasteroid = new Asteroid(myX, myY, 6 * lenX / distance, lenY / (5 * 1 - lenY/100), 1);
 				var exWidth = game.assets['assets/images/effect0.png'].width/4;
-                myplanets[8] = new Explosion(myX - exWidth/2, myY - exWidth/2);
+                myplanets[17] = new Explosion(myX - exWidth/2, myY - exWidth/2);
                 scene.addChild(myasteroid);
-                scene.addChild(myplanets[8]);
+                scene.addChild(myplanets[17]);
                 placed = true;
 				game.assets['assets/sounds/shot.wav'].play();
 				game.subtractAstCount();
